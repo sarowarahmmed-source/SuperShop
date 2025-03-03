@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - IMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #124e66 0%, #0d3b4d 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #124e66;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #124e66;
+            transition: all 0.3s ease;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: #124e66;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(18, 78, 102, 0.1);
+        }
+
+        .form-control:focus + i {
+            color: #124e66;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #124e66;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            background: #0d3b4d;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .error-message {
+            background: #ffe9e9;
+            color: #d63031;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .background-shapes div {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        .shape1 { width: 80px; height: 80px; left: 10%; top: 10%; }
+        .shape2 { width: 60px; height: 60px; right: 15%; top: 20%; }
+        .shape3 { width: 100px; height: 100px; left: 20%; bottom: 20%; }
+        .shape4 { width: 50px; height: 50px; right: 10%; bottom: 10%; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-20px, 20px) rotate(90deg); }
+            50% { transform: translate(20px, -20px) rotate(180deg); }
+            75% { transform: translate(-20px, -20px) rotate(270deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape1"></div>
+        <div class="shape2"></div>
+        <div class="shape3"></div>
+        <div class="shape4"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Welcome Back</h1>
+            <p>Please login to continue</p>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+            Invalid username or password
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <input type="text" id="username" class="form-control" placeholder="Username" required>
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="password" class="form-control" placeholder="Password" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Login
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    const firebaseConfig = {
+        apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+        authDomain: "supershop-bc036.firebaseapp.com",
+        databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "supershop-bc036",
+        storageBucket: "supershop-bc036.firebasestorage.app",
+        messagingSenderId: "528401541608",
+        appId: "1:528401541608:web:e1b352f95286170de09c5d",
+        measurementId: "G-W4D9D0Z20S"
+    };
+    // Initialize Firebase first
+    const app = initializeApp(firebaseConfig);
+    // Then initialize auth and db
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Update the handleLogin function
+    window.handleLogin = async function(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorMessage = document.getElementById('errorMessage');
+        
+        try {
+            // First, find user by username in Firestore
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'User not found';
+                return;
+            }
+
+            const userData = querySnapshot.docs[0].data();
+            
+            // Then authenticate with Firebase using email
+            const userCredential = await signInWithEmailAndPassword(auth, userData.email, password);
+            
+            // Store user data in session
+            sessionStorage.setItem('currentUser', JSON.stringify({
+                uid: userCredential.user.uid,
+                id: querySnapshot.docs[0].id,
+                username: userData.username,
+                role: userData.role,
+                email: userData.email
+            }));
+            
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error('Login error:', error);
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = 'Invalid username or password';
+        }
+    };
+    </script>
+</body>
+</html>

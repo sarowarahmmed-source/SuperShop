@@ -1,0 +1,549 @@
+.settings-container {
+    padding: 2rem;
+}
+
+.settings-section {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.settings-section h2 {
+    color: #124e66;
+    margin-bottom: 1.5rem;
+}
+
+.category-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    width: 500px;
+}
+
+.category-form input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.category-form input:focus {
+    border-color: #124e66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(18, 78, 102, 0.1);
+}
+
+.category-form button {
+    background: #124e66;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+
+.category-form button:hover {
+    background: #0d3b4d;
+}
+
+.category-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.category-list th,
+.category-list td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.category-list th {
+    background: #124e66;
+    color: white;
+    font-weight: 500;
+}
+
+.category-list tr:hover {
+    background: #f8f9fa;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+/* Main content adjustments */
+.main-content {
+    margin-left: 250px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+.settings-container {
+    padding: 0rem 1rem;
+    width: 100%;
+    margin: 0 auto;
+    display: block;  /* Changed from flex to block */
+}
+.tab-content {
+    display: none;
+    padding: 20px 0;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Update user management specific styles */
+#usersTab {
+    width: 100%;
+}
+.category-list{
+    width: 80%;
+    
+}
+#usersTab .settings-section {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 20px;
+}
+
+#usersTab h2{
+    padding-bottom: 10px;
+}
+#usersTab .user-form {
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+}
+
+#usersTab .user-list {
+    overflow-x: auto;
+}
+
+#usersTab .user-list table {
+    min-width: 800px;
+}
+
+/* Add these new styles */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;  
+    
+}
+
+.settings-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    
+    
+}
+#categoryTableBody{
+    overflow: scroll;
+   max-height:100vh;
+   padding: .3rem;
+}
+.settings-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #124e66;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+.settings-section h2 i {
+    font-size: 1.2rem;
+}
+.user-form {
+    margin-bottom: 2rem;
+}
+.user-form select {
+    width: 500px;
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+.user-form select:focus {
+    border-color: #124e66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(18, 78, 102, 0.1);
+}
+.user-list table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.user-list th, 
+.user-list td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.user-list th {
+    background: linear-gradient(90deg, #124e66 0%, #1a6d8f 100%);
+    color: white;
+    font-weight: 500;
+}
+.user-list tr:hover {
+    background: #f8f9fa;
+}
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.edit-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.edit-btn:hover {
+    background: #218838;
+    transform: scale(1.05);
+}
+.form-group {
+    margin-bottom: 1.5rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+}
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #124e66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(18, 78, 102, 0.1);
+}
+.save-btn {
+    background: #124e66;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+.save-btn:hover {
+    background: #0d3b4d;
+    transform: translateY(-1px);
+}
+/* Toggle Switch */
+.settings-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #124e66;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+/* Theme Options */
+.theme-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+.theme-option {
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.theme-preview {
+    height: 100px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+.theme-preview.light {
+    background: #ffffff;
+}
+.theme-preview.dark {
+    background: #1a1a1a;
+}
+.theme-preview.blue {
+    background: #124e66;
+}
+.theme-option:hover .theme-preview {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+/* Enhanced form elements */
+.category-form input {
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.category-form button {
+    padding: 1rem 2rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+}
+/* Table improvements */
+.category-list table {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.category-list th {
+    background: linear-gradient(90deg, #124e66 0%, #1a6d8f 100%);
+    padding: 1.2rem 1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+.category-list td {
+    padding: .5rem;
+    vertical-align: middle;
+}
+.delete-btn {
+    padding: 0.6rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+.delete-btn:hover {
+    transform: scale(1.05);
+}
+.pos-header{
+    background: linear-gradient(180deg, #124e66 0%, #0d3b4d 100%);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    color: white;
+}
+/* Theme styles */
+.theme-option.active .theme-preview {
+    border: 2px solid #124e66;
+    transform: scale(1.05);
+}
+
+/* Light theme */
+.light-theme {
+    --bg-color: #f8f9fa;
+    --text-color: #333;
+    --header-bg: #fff;
+}
+
+/* Dark theme */
+.dark-theme {
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --header-bg: #2d2d2d;
+    --card-bg: #2d2d2d;
+    --border-color: #404040;
+    --input-bg: #333333;
+    --input-text: #ffffff;
+    --hover-bg: #404040;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Apply theme variables to components */
+.dark-theme .settings-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-group input,
+.dark-theme .form-group textarea,
+.dark-theme .form-group select {
+    background: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--input-text);
+}
+
+.dark-theme .category-list th,
+.dark-theme .user-list th {
+    background: #124e66;
+}
+
+.dark-theme .category-list tr:hover,
+.dark-theme .user-list tr:hover {
+    background: var(--hover-bg);
+}
+.dark-theme .category-list tr,
+.dark-theme .user-list tr {
+    background: var(--hover-bg);
+}
+
+.dark-theme .category-list td,
+.dark-theme .user-list td {
+    border-color: var(--border-color);
+}
+
+.dark-theme .slider {
+    background-color: #404040;
+}
+
+.dark-theme .theme-preview {
+    border-color: var(--border-color);
+}
+
+.dark-theme .save-btn:hover {
+    background: #0a3346;
+}
+
+.dark-theme .header-date {
+    background: var(--input-bg);
+    color: var(--text-color);
+}
+
+.dark-theme .pos-header {
+    background: #124e66;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.dark-theme .settings-section {
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+.dark-theme h2{
+    color: white;
+}
+/* Blue theme */
+.blue-theme {
+    --bg-color: #e6f3f7;
+    --text-color: #124e66;
+    --header-bg: #124e66;
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.pos-header {
+    background-color: var(--header-bg);
+}
+.header-role {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 20px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.header-role i {
+    color: #124e66;
+}
+.settings-tabs {
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-right: 20px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: #124e66;
+}
+
+.tab-btn.active {
+    color: #124e66;
+    border-bottom: 2px solid #124e66;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

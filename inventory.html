@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li>
+                <a href="dashboard.html" >
+                    <i class="fas fa-home" ></i>
+                    Dashboard
+                </a>
+            </li> <li>
+                <a href="pos.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    Pos
+                </a>
+            </li>
+            <li>
+                <a href="inventory.html"class="active">
+                    <i class="fas fa-box" ></i>
+                    Inventory
+                </a>
+            </li>
+            <li>
+                <a href="vat.html">
+                    <i class="fas fa-percent"></i>
+                    Tax
+                </a>
+            </li>
+            <li>
+                <a href="sales.html">
+                    <i class="fas fa-store"></i>
+                    Sale
+                </a>
+            </li>
+            <li>
+                <a href="user-sales.html">
+                    <i class="fas fa-store"></i>
+                    User-Management
+                </a>
+            </li>
+            <li>
+                <a href="settings.html">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <header class="header">
+            <h1>Inventory Management System</h1>
+        </header>
+
+        <div class="container">
+            <div class="filter-container">
+                <!-- Remove this from the filter-container div -->
+                <div class="left-filters">
+                    <!-- Remove this entire label element -->
+                    <button class="add-btn" onclick="openModal()">Add New Item</button>
+                </div>
+                <div class="filters">
+                    <button id="bulkDeleteBtn" class="delete-btn" onclick="bulkDelete()" style="display: none;">Delete Selected</button>
+                    <button class="print-btn" onclick="printInventory()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <input type="text" id="searchInput" class="filter-select" placeholder="Search by name/code/ID...">
+                    <input type="date" id="dateFilter" class="filter-select">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Food">Food</option>
+                        <option value="Books">Books</option>
+                    </select>
+                    <select id="stockFilter" class="filter-select">
+                        <option value="">All Stock</option>
+                        <option value="inStock">In Stock</option>
+                        <option value="lowStock">Low Stock</option>
+                        <option value="outOfStock">Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="inventoryTable">
+                    <!-- Update table headers -->
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>SL</th>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Special Code</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addItemModal" class="modal">
+        <!-- Update modal content -->
+        <!-- In the form section, update these fields -->
+        <div class="modal-content">
+            <h2>Add New Item</h2>
+            <form id="addItemForm">
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="itemImage">Item Image (Optional)</label>
+                        <input type="file" id="itemImage" accept="image/*">
+                        <div id="imagePreview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialCode">Special Code</label>
+                        <input type="text" id="specialCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Item Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Food">Food</option>
+                            <option value="Books">Books</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input type="number" step="0.01" id="price" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="6" placeholder="Enter item description..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <div class="modal-buttons">
+                            <button id="cancel" type="button" onclick="closeModal()">Cancel</button>
+                            <button type="submit" class="add-btn">Add Item</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, getDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // Generate random ID
+        function generateId() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Generate special code
+        function generateSpecialCode() {
+            return 'SP-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+        // Image preview event listener
+        document.getElementById('itemImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px;">`;
+            }
+            
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+        // Add filter functionality
+        document.getElementById('categoryFilter').addEventListener('change', fetchItems);
+        document.getElementById('stockFilter').addEventListener('change', fetchItems);
+        // Add new event listeners
+        document.getElementById('searchInput').addEventListener('input', fetchItems);
+        document.getElementById('dateFilter').addEventListener('change', fetchItems);
+        document.getElementById('selectAll').addEventListener('change', toggleSelectAll);
+        // Change the updateBulkDeleteButton function to be globally accessible
+        function toggleSelectAll(e) {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = e.target.checked);
+            updateBulkDeleteButton();
+        }
+        // Make updateBulkDeleteButton globally accessible
+        window.updateBulkDeleteButton = function() {
+            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+            document.getElementById('bulkDeleteBtn').style.display = checkedBoxes.length > 0 ? 'inline-block' : 'none';
+        }
+        window.printInventory = function() {
+            // Create a timestamp for the report
+            const date = new Date().toLocaleString();
+            
+            // Get current filter values
+            const category = document.getElementById('categoryFilter').value;
+            const stock = document.getElementById('stockFilter').value;
+            const search = document.getElementById('searchInput').value;
+            
+            // Create print header
+            const header = document.createElement('div');
+            header.className = 'print-header';
+            header.innerHTML = `
+                <h2>Inventory Report</h2>
+                <p>Generated: ${date}</p>
+                ${category ? `<p>Category: ${category}</p>` : ''}
+                ${stock ? `<p>Stock Filter: ${stock}</p>` : ''}
+                ${search ? `<p>Search Term: ${search}</p>` : ''}
+            `;
+            
+            // Store original table parent
+            const tableContainer = document.querySelector('.table-container');
+            const originalParent = tableContainer.parentNode;
+            
+            // Create a print container
+            const printContainer = document.createElement('div');
+            printContainer.className = 'print-container';
+            printContainer.appendChild(header);
+            printContainer.appendChild(tableContainer.cloneNode(true));
+            // Hide original and show print version
+            document.body.appendChild(printContainer);
+            tableContainer.style.display = 'none';
+            // Print
+            window.print();
+            // Cleanup
+            document.body.removeChild(printContainer);
+            tableContainer.style.display = '';
+        };
+        // Update fetchItems function
+        // Add this function after Firebase initialization
+        // Update the loadCategories function to populate both dropdowns
+        async function loadCategories() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const categorySelect = document.getElementById('category');
+            const defaultOptions = '<option value="">All Categories</option>';
+            const formDefaultOption = '<option value="">Select Category</option>';
+            
+            categoryFilter.innerHTML = defaultOptions;
+            categorySelect.innerHTML = formDefaultOption;
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, 'categories'));
+                querySnapshot.forEach((doc) => {
+                    const category = doc.data();
+                    
+                    // Add to filter dropdown
+                    categoryFilter.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+                    
+                    // Add to form dropdown
+                    categorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+        // Add loadCategories to initial load
+        // Add this line before fetchItems()
+        loadCategories();
+        try {
+                const querySnapshot = await getDocs(collection(db, 'categories'));
+                querySnapshot.forEach((doc) => {
+                    const category = doc.data();
+                    const option = document.createElement('option');
+                    option.value = category.name;
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        
+        // Add this function to load settings
+        async function loadStockSettings() {
+            try {
+                const settingsSnapshot = await getDocs(collection(db, 'settings'));
+                if (!settingsSnapshot.empty) {
+                    const settings = settingsSnapshot.docs[0].data();
+                    const stockFilter = document.getElementById('stockFilter');
+                    const lowStockThreshold = settings.lowStockThreshold || 10;
+                    
+                    stockFilter.innerHTML = `
+                        <option value="">All Stock</option>
+                        <option value="inStock">In Stock</option>
+                        <option value="lowStock">Low Stock (< ${lowStockThreshold})</option>
+                        <option value="outOfStock">Out of Stock</option>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading stock settings:', error);
+            }
+        }
+        // Update the fetchItems function to use the dynamic threshold
+        async function fetchItems() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const stockFilter = document.getElementById('stockFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            // Add these lines after your Firebase initialization
+            window.collection = collection;
+            window.addDoc = addDoc;
+            window.generateId = generateId;
+            const querySnapshot = await getDocs(collection(db, 'inventory'));
+            let serialNumber = 1;
+            
+            // Get stock threshold from settings
+            let lowStockThreshold = 10;
+            try {
+                const settingsSnapshot = await getDocs(collection(db, 'settings'));
+                if (!settingsSnapshot.empty) {
+                    const settings = settingsSnapshot.docs[0].data();
+                    lowStockThreshold = settings.lowStockThreshold || 10;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+            
+            querySnapshot.forEach((doc) => {
+                const item = doc.data();
+                
+                // Apply filters
+                if (searchQuery && !item.name.toLowerCase().includes(searchQuery) && 
+                    !item.specialCode.toLowerCase().includes(searchQuery) &&
+                    !item.id.toLowerCase().includes(searchQuery)) return;
+                if (categoryFilter && item.category !== categoryFilter) return;
+                if (dateFilter && item.createdAt && item.createdAt.split('T')[0] !== dateFilter) return;
+                if (stockFilter) {
+                    const quantity = parseInt(item.quantity);
+                    if (stockFilter === 'inStock' && quantity <= lowStockThreshold) return;
+                    if (stockFilter === 'lowStock' && (quantity <= 0 || quantity >= lowStockThreshold)) return;
+                    if (stockFilter === 'outOfStock' && quantity > 0) return;
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" class="item-checkbox" value="${doc.id}" onchange="updateBulkDeleteButton()"></td>
+                    <td>${serialNumber}</td>
+                    <td>${item.id}</td>
+                    <td>${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover;">` : 'No Image'}</td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>${item.specialCode}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${item.price}</td>
+                    <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editItem('${doc.id}')">Edit</button>
+                        <button class="delete-btn" onclick="deleteItem('${doc.id}')">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                serialNumber++;
+            });
+        }
+        let currentDocId = null;
+        // Single definition of openModal
+        window.openModal = () => {
+            document.getElementById('addItemModal').style.display = 'block';
+        };
+        // Single definition of closeModal
+        window.closeModal = () => {
+            document.getElementById('addItemModal').style.display = 'none';
+            document.getElementById('addItemForm').reset();
+            document.getElementById('imagePreview').innerHTML = '';
+            currentDocId = null;
+            const submitBtn = document.querySelector('#addItemForm button[type="submit"]');
+            submitBtn.textContent = 'Add Item';
+        };
+        // Single definition of editItem
+        window.editItem = async (docId) => {
+            currentDocId = docId;
+            const docRef = doc(db, 'inventory', docId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const item = docSnap.data();
+                document.getElementById('name').value = item.name;
+                document.getElementById('category').value = item.category;
+                document.getElementById('specialCode').value = item.specialCode;
+                document.getElementById('quantity').value = item.quantity;
+                document.getElementById('price').value = item.price;
+                document.getElementById('description').value = item.description || ''; // Add this line
+                
+                if (item.imageUrl) {
+                    document.getElementById('imagePreview').innerHTML = 
+                        `<img src="${item.imageUrl}" style="width: 50px; height: 50px; object-fit: cover;">`;
+                }
+                const submitBtn = document.querySelector('#addItemForm button[type="submit"]');
+                submitBtn.textContent = 'Update Item';
+                openModal();
+            }
+        };
+        // Single definition of deleteItem
+        window.deleteItem = async (id) => {
+            try {
+                await deleteDoc(doc(db, 'inventory', id));
+                fetchItems();
+            } catch (error) {
+                console.error('Error deleting item:', error);
+            }
+        };
+        // Single form submit handler
+        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const imageFile = document.getElementById('itemImage').files[0];
+            
+            try {
+                let imageUrl = '';
+                if (imageFile) {
+                    const storageRef = ref(storage, 'items/' + Date.now() + '_' + imageFile.name);
+                    const snapshot = await uploadBytes(storageRef, imageFile);
+                    imageUrl = await getDownloadURL(snapshot.ref);
+                }
+        const itemData = {
+            name: document.getElementById('name').value,
+            category: document.getElementById('category').value,
+            specialCode: document.getElementById('specialCode').value,
+            quantity: document.getElementById('quantity').value,
+            price: document.getElementById('price').value,
+            description: document.getElementById('description').value, // Add this line
+            createdAt: new Date().toISOString(),
+            imageUrl: imageUrl || ''
+        };
+        
+                if (currentDocId) {
+                    await updateDoc(doc(db, 'inventory', currentDocId), itemData);
+                    currentDocId = null;
+                } else {
+                    itemData.id = generateId();
+                    await addDoc(collection(db, 'inventory'), itemData);
+                }
+        
+                closeModal();
+                fetchItems();
+            } catch (error) {
+                console.error('Error saving item:', error);
+            }
+        });
+        // Initial load
+        fetchItems();
+        
+    </script>
+    <script>
+        // In your module script section, add this line after defining fetchItems
+        window.fetchItems = fetchItems;
+        async function importCSV(input) {
+            const file = input.files[0];
+            if (!file) return;
+    
+            try {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: async function(results) {
+                        const jsonData = results.data;
+    
+                        if (jsonData.length === 0) {
+                            alert('No data found in CSV file');
+                            return;
+                        }
+    
+                        const confirmImport = confirm(`Import ${jsonData.length} items?`);
+                        if (!confirmImport) return;
+    
+                        let successCount = 0;
+                        let errorCount = 0;
+    
+                        for (const item of jsonData) {
+                            try {
+                                if (!item.specialCode) {
+                                    errorCount++;
+                                    console.error('Missing special code for item:', item);
+                                    continue;
+                                }
+    
+                                const itemData = {
+                                    id: generateId(),
+                                    name: item.name || '',
+                                    category: item.category || '',
+                                    specialCode: item.specialCode,
+                                    quantity: parseInt(item.quantity) || 0,
+                                    price: parseFloat(item.price) || 0,
+                                    description: item.description || '',
+                                    createdAt: new Date().toISOString(),
+                                    imageUrl: ''
+                                };
+    
+                                await addDoc(collection(db, 'inventory'), itemData);
+                                successCount++;
+                            } catch (error) {
+                                errorCount++;
+                                console.error('Error importing item:', error);
+                            }
+                        }
+    
+                        alert(`Import completed!\nSuccessful: ${successCount}\nFailed: ${errorCount}`);
+                        window.fetchItems(); // Update this line
+                        input.value = ''; // Reset file input
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                        alert('Error parsing CSV file');
+                    }
+                });
+            } catch (error) {
+                console.error('Error reading CSV file:', error);
+                alert('Error importing CSV file');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales List</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sales-container {
+            padding: 20px;
+            margin-left: 250px;
+        }
+        .sales-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .sales-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .sales-table th, .sales-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .sales-table th {
+            background: #124e66;
+            color: white;
+        }
+        .view-details-btn {
+            padding: 5px 10px;
+            background: #124e66;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" ><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="pos.html"><i class="fas fa-shopping-cart"></i> Pos</a></li>
+            <li><a href="inventory.html" ><i class="fas fa-box"></i> Inventory</a></li>
+            <li><a href="vat.html"><i class="fas fa-percent"></i> Tax</a></li>
+            <li><a href="sales.html" class="active"><i class="fas fa-store"></i> Sales</a></li>
+            <li><a href="user-sales.html"><i class="fas fa-exclamation-triangle"></i> User-Management</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="sales-container">
+        <div class="sales-header">
+            <h1>Sales List</h1>
+            
+            <div class="sales-filters">
+                <input type="date" id="dateFilter" class="filter-select">
+                <input type="text" id="searchInput" placeholder="Search by ID..." class="filter-select">
+                <button onclick="printSalesList()" class="view-details-btn">
+                    <i class="fas fa-print"> </i>Print
+                </button>
+            </div>
+        </div>
+
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Subtotal</th>
+                    <th>VAT</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="salesTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="saleDetailsModal" class="modal">
+
+        <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+        <h2>Sale Details</h2>
+        <button onclick="printSaleDetail()" class="view-details-btn">
+            <i class="fas fa-print"></i> Print
+        </button>
+    </div>
+    <div id="saleDetails"></div>
+    <button onclick="closeModal()" class="view-details-btn">Close</button>
+</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, updateDoc, addDoc, deleteDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadSales() {
+            const salesTable = document.getElementById('salesTableBody');
+            const dateFilter = document.getElementById('dateFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+            try {
+                const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(salesQuery);
+                
+                salesTable.innerHTML = '';
+                
+                querySnapshot.forEach((doc) => {
+                    const sale = doc.data();
+                    
+                    // Apply filters
+                    if (dateFilter && !sale.timestamp.startsWith(dateFilter)) return;
+                    if (searchQuery && !sale.saleId.toLowerCase().includes(searchQuery)) return;
+
+                    const row = document.createElement('tr');
+                    // Add delete button in the row template inside loadSales function
+                    row.innerHTML = `
+                        <td>${sale.saleId}</td>
+                        <td>${new Date(sale.timestamp).toLocaleString()}</td>
+                        <td>${sale.items.length} items</td>
+                        <td>$${sale.totalAmount.toFixed(2)}</td>
+                        <td>$${sale.totalVat.toFixed(2)}</td>
+                        <td>$${sale.grandTotal.toFixed(2)}</td>
+                        <td>
+                            <button class="view-details-btn" onclick="showSaleDetails('${doc.id}')">
+                                View Details
+                            </button>
+                            <button class="view-details-btn" style="background: #dc3545;" onclick="deleteSale('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    salesTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading sales:', error);
+            }
+        }
+
+        // Add event listeners
+        document.getElementById('dateFilter').addEventListener('change', loadSales);
+        document.getElementById('searchInput').addEventListener('input', loadSales);
+
+        // Make functions globally accessible
+        window.loadSales = loadSales;
+        window.showSaleDetails = async function(saleId) {
+            try {
+                const salesQuery = query(collection(db, 'sales'));
+                const querySnapshot = await getDocs(salesQuery);
+                let saleData;
+                
+                querySnapshot.forEach((doc) => {
+                    if (doc.id === saleId) {
+                        saleData = doc.data();
+                    }
+                });
+
+                if (saleData) {
+                    const modal = document.getElementById('saleDetailsModal');
+                    const details = document.getElementById('saleDetails');
+                    
+                    details.innerHTML = `
+                        <p><strong>Sale ID:</strong> ${saleData.saleId}</p>
+                        <p><strong>Date:</strong> ${new Date(saleData.timestamp).toLocaleString()}</p>
+                        <h3>Items:</h3>
+                        <table style="width:100%; margin-top:10px;">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${saleData.items.map(item => `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>$${item.price.toFixed(2)}</td>
+                                        <td>$${(item.quantity * item.price).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div style="margin-top:20px;">
+                            <p><strong>Subtotal:</strong> $${saleData.totalAmount.toFixed(2)}</p>
+                            <p><strong>VAT:</strong> $${saleData.totalVat.toFixed(2)}</p>
+                            <p><strong>Total:</strong> $${saleData.grandTotal.toFixed(2)}</p>
+                        </div>
+                    `;
+                    
+                    modal.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading sale details:', error);
+            }
+        };
+
+        window.closeModal = function() {
+            document.getElementById('saleDetailsModal').style.display = 'none';
+        };
+        // Add this after the window.closeModal function
+        window.deleteSale = async function(saleId) {
+            if (!confirm('Are you sure you want to delete this sale? This will restore items back to inventory.')) {
+                return;
+            }
+        
+            try {
+                // Get the sale data first
+                const saleDoc = await getDoc(doc(db, 'sales', saleId));
+                if (!saleDoc.exists()) {
+                    alert('Sale not found!');
+                    return;
+                }
+        
+                const saleData = saleDoc.data();
+        
+                // Restore items to inventory
+                for (const item of saleData.items) {
+                    try {
+                        const inventoryRef = doc(db, 'inventory', item.id);
+                        const inventoryDoc = await getDoc(inventoryRef);
+                        
+                        if (inventoryDoc.exists()) {
+                            const currentQuantity = inventoryDoc.data().quantity || 0;
+                            await updateDoc(inventoryRef, {
+                                quantity: currentQuantity + parseInt(item.quantity)
+                            });
+                            console.log(`Restored ${item.quantity} units of ${item.name} to inventory`);
+                        } else {
+                            console.error(`Product ${item.id} not found in inventory`);
+                        }
+                    } catch (error) {
+                        console.error(`Error restoring item ${item.id}:`, error);
+                    }
+                }
+        
+                // Delete the sale record
+                await deleteDoc(doc(db, 'sales', saleId));
+                
+                // Refresh the sales list
+                loadSales();
+                alert('Sale deleted and inventory restored successfully!');
+            } catch (error) {
+                console.error('Error deleting sale:', error);
+                alert('Error deleting sale. Please try again.');
+            }
+        };
+        // Initial load
+        loadSales();
+        // Add this function before the loadSales function
+window.printSalesList = function() {
+    const date = new Date().toLocaleString();
+    const dateFilter = document.getElementById('dateFilter').value;
+    const searchQuery = document.getElementById('searchInput').value;
+    
+    // Create print header
+    const header = document.createElement('div');
+    header.className = 'print-header';
+    header.innerHTML = `
+        <h2>Sales Report</h2>
+        <p>Generated: ${date}</p>
+        ${dateFilter ? `<p>Date Filter: ${dateFilter}</p>` : ''}
+        ${searchQuery ? `<p>Search Query: ${searchQuery}</p>` : ''}
+    `;
+    
+    // Clone the table
+    const tableContainer = document.querySelector('.sales-table');
+    const printContainer = document.createElement('div');
+    printContainer.className = 'print-container';
+    printContainer.appendChild(header);
+    printContainer.appendChild(tableContainer.cloneNode(true));
+    
+    // Hide action buttons in the print view
+    const actionCells = printContainer.querySelectorAll('td:last-child, th:last-child');
+    actionCells.forEach(cell => cell.style.display = 'none');
+    
+    // Add print styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-container, .print-container * {
+                visibility: visible;
+            }
+            .print-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .print-header {
+                margin-bottom: 20px;
+            }
+            .sales-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .sales-table th, .sales-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+        }
+    `;
+    
+    // Append to document
+    document.body.appendChild(style);
+    document.body.appendChild(printContainer);
+    
+    // Print and cleanup
+    window.print();
+    document.body.removeChild(style);
+    document.body.removeChild(printContainer);
+};
+window.printSaleDetail = function() {
+    const saleDetails = document.getElementById('saleDetails').cloneNode(true);
+    const printContainer = document.createElement('div');
+    printContainer.className = 'print-container';
+    
+    // Add receipt style header
+    const header = document.createElement('div');
+    header.className = 'print-header';
+    header.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">IMS Store</h2>
+            <p style="margin: 5px 0;">123 Main Street, City</p>
+            <p style="margin: 5px 0;">Phone: (123) 456-7890</p>
+            <p style="margin: 5px 0;">Email: store@example.com</p>
+            <hr style="border-top: 2px dashed #000;">
+        </div>
+    `;
+    
+    printContainer.appendChild(header);
+    printContainer.appendChild(saleDetails);
+    
+    // Add print styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-container, .print-container * {
+                visibility: visible;
+            }
+            .print-container {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                top: 0;
+                width: 80mm;
+                padding: 10mm;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+            }
+            .print-header {
+                margin-bottom: 20px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 10px 0;
+            }
+            th, td {
+                padding: 5px;
+                text-align: left;
+                border: none;
+            }
+            th {
+                border-bottom: 1px solid #000;
+            }
+            tr:last-child td {
+                border-top: 1px solid #000;
+            }
+            hr {
+                border: none;
+                border-top: 1px dashed #000;
+                margin: 10px 0;
+            }
+            p {
+                margin: 5px 0;
+            }
+            h2, h3 {
+                margin: 10px 0;
+            }
+            .print-footer {
+                text-align: center;
+                margin-top: 20px;
+                border-top: 2px dashed #000;
+                padding-top: 10px;
+            }
+        }
+    `;
+    
+    // Add footer
+    const footer = document.createElement('div');
+    footer.className = 'print-footer';
+    footer.innerHTML = `
+        <p>Thank you for your business!</p>
+        <p>Generated: ${new Date().toLocaleString()}</p>
+    `;
+    printContainer.appendChild(footer);
+    
+    // Append to document
+    document.body.appendChild(style);
+    document.body.appendChild(printContainer);
+    
+    // Print and cleanup
+    window.print();
+    document.body.removeChild(style);
+    document.body.removeChild(printContainer);
+};
+    </script>
+</body>
+</html>
