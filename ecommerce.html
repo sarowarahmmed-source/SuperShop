@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Orders</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .order-container {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+
+        .order-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .order-table th, .order-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .accept-btn { background: #28a745; color: white; }
+        .reject-btn { background: #dc3545; color: white; }
+        .details-btn { background: #17a2b8; color: white; }
+
+        .order-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" ><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="pos.html"><i class="fas fa-shopping-cart"></i> Pos</a></li>
+            <li><a href="electronics-pos.html"><i class="fas fa-shopping-cart"></i> E-Pos</a></li>
+            <li><a href="inventory.html"><i class="fas fa-box"></i> Inventory</a></li>
+            <li><a href="vat.html"><i class="fas fa-percent"></i> Tax</a></li>
+            <li><a href="sales.html"><i class="fas fa-store"></i> Sales</a></li>
+            <li><a href="user-sales.html"><i class="fas fa-exclamation-triangle"></i> User-Management</a></li>
+            <li><a href="employee.html"><i class="fas fa-bars"></i> Employee</a></li>
+            <li><a href="expenses.html"><i class="fas fa-money-bill-wave"></i> Expenses</a></li>
+            <li><a href="customers.html""><i class="fas fa-users"></i> Customer</a></li>
+            <li><a href="ecommerce.html"class="active"><i class="fab fa-google-wallet"></i> Ecomerce</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <header class="header">
+            <h1>E-commerce Orders</h1>
+        </header>
+
+        <div class="order-container">
+            <div class="order-filters">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <input type="date" id="dateFilter" class="filter-select">
+            </div>
+
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="orderDetailsModal" class="order-details-modal">
+        <div class="modal-content">
+            <h2>Order Details</h2>
+            <div id="orderDetailsContent"></div>
+            <button onclick="closeOrderModal()" class="action-btn">Close</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc, query, where, orderBy, getDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadOrders() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            let q = query(collection(db, 'ecommerceOrders'), orderBy('date', 'desc'));
+            
+            if (statusFilter) {
+                q = query(q, where('status', '==', statusFilter));
+            }
+            if (dateFilter) {
+                q = query(q, where('date', '==', dateFilter));
+            }
+
+            const querySnapshot = await getDocs(q);
+            const tableBody = document.getElementById('orderTableBody');
+            tableBody.innerHTML = '';
+
+            querySnapshot.forEach((doc) => {
+                const order = doc.data();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.orderId}</td>
+                    <td>${new Date(order.date).toLocaleDateString()}</td>
+                    <td>${order.customerName}</td>
+                    <td>৳${order.total.toFixed(2)}</td>
+                    <td><span class="order-status status-${order.status}">${order.status}</span></td>
+                    <td class="action-buttons">
+                        <button onclick="showOrderDetails('${doc.id}')" class="action-btn details-btn">Details</button>
+                        ${order.status === 'pending' ? `
+                            <button onclick="updateOrderStatus('${doc.id}', 'processing')" class="action-btn accept-btn">Accept</button>
+                            <button onclick="updateOrderStatus('${doc.id}', 'cancelled')" class="action-btn reject-btn">Reject</button>
+                        ` : ''}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.updateOrderStatus = async function(orderId, newStatus) {
+            try {
+                await updateDoc(doc(db, 'ecommerceOrders', orderId), {
+                    status: newStatus,
+                    lastUpdated: new Date().toISOString()
+                });
+                loadOrders();
+            } catch (error) {
+                console.error('Error updating order:', error);
+                alert('Error updating order status');
+            }
+        };
+
+        window.showOrderDetails = async function(orderId) {
+            try {
+                const orderDoc = await getDoc(doc(db, 'ecommerceOrders', orderId));
+                const order = orderDoc.data();
+                
+                const modal = document.getElementById('orderDetailsModal');
+                const content = document.getElementById('orderDetailsContent');
+                
+                content.innerHTML = `
+                    <div class="order-details">
+                        <div class="order-info">
+                            <p><strong>Order ID:</strong> ${order.orderId}</p>
+                            <p><strong>Customer:</strong> ${order.customerName}</p>
+                            <p><strong>Email:</strong> ${order.email}</p>
+                            <p><strong>Phone:</strong> ${order.phone}</p>
+                            <p><strong>Address:</strong> ${order.address}</p>
+                            <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+                            <p><strong>Status:</strong> <span class="order-status status-${order.status}">${order.status}</span></p>
+                        </div>
+                        
+                        <h3>Order Items</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${order.items.map(item => `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>৳${item.price.toFixed(2)}</td>
+                                        <td>৳${(item.price * item.quantity).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="total-section">
+                            <p><strong>Subtotal:</strong> ৳${order.subtotal.toFixed(2)}</p>
+                            <p><strong>VAT (${(order.vatRate * 100).toFixed(0)}%):</strong> ৳${order.vat.toFixed(2)}</p>
+                            <p><strong>Total Amount:</strong> ৳${order.total.toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                alert('Error loading order details');
+            }
+        };
+
+        window.closeOrderModal = function() {
+            document.getElementById('orderDetailsModal').style.display = 'none';
+        };
+
+        // Event listeners
+        document.getElementById('statusFilter').addEventListener('change', loadOrders);
+        document.getElementById('dateFilter').addEventListener('change', loadOrders);
+
+        // Initial load
+        loadOrders();
+  
+// Add at the bottom of the script
+document.addEventListener('DOMContentLoaded', () => {
+    loadOrders();
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('orderDetailsModal');
+        if (event.target === modal) {
+            closeOrderModal();
+        }
+    };
+});
+</script>
+</body>
+</html>
+<style>
+    .order-details {
+        margin-top: 20px;
+    }
+
+    .order-details table {
+        width: 100%;
+        margin: 15px 0;
+        border-collapse: collapse;
+    }
+
+    .order-details th, .order-details td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    .order-details th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .order-details p {
+        margin: 10px 0;
+        line-height: 1.5;
+    }
+
+    .order-details h3 {
+        margin: 20px 0 10px;
+        color: #124e66;
+    }
+
+    .total-section {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 2px solid #eee;
+    }
+
+    .total-section p {
+        font-size: 1.1em;
+    }
+
+    .total-section p:last-child {
+        font-weight: bold;
+        color: #124e66;
+    }
+</style>

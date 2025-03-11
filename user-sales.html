@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Sales Tracking</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .container {
+            padding: 20px;
+            margin-left: 250px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .filters {
+            display: flex;
+            gap: 10px;
+        }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 {
+            color: #124e66;
+            margin-bottom: 10px;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            width: 50%; /* Add this line */
+            margin-left: auto; /* Add this line */
+            margin-right: auto; /* Add this line */
+        }
+        .header{
+            margin-left: 250px;
+        }
+     
+  
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" ><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="pos.html"><i class="fas fa-shopping-cart"></i> Pos</a></li>
+            <li><a href="electronics-pos.html"><i class="fas fa-shopping-cart"></i> E-Pos</a></li>
+            <li><a href="inventory.html"><i class="fas fa-box"></i> Inventory</a></li>
+            <li><a href="vat.html"><i class="fas fa-percent"></i> Tax</a></li>
+            <li><a href="sales.html"><i class="fas fa-store"></i> Sales</a></li>
+            <li><a href="user-sales.html" class="active"><i class="fas fa-exclamation-triangle"></i> User-Management</a></li>
+            <li><a href="employee.html"><i class="fas fa-bars"></i> Employee</a></li>
+            <li><a href="expenses.html"><i class="fas fa-money-bill-wave"></i> Expenses</a></li>
+            <li><a href="customers.html"><i class="fas fa-users"></i> Customer</a></li>
+            <li><a href="ecommerce.html"><i class="fab fa-google-wallet"></i> Ecomerce</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="header">
+        <h1>User Sales Tracking</h1>
+  
+        <div class="filters">
+            <input type="date" id="startDate" class="filter-select">
+            <input type="date" id="endDate" class="filter-select">
+            <select id="userFilter" class="filter-select">
+                <option value="">All Users</option>
+            </select>
+            <select id="timeFilter" class="filter-select">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+            </select>
+            <button onclick="generateReport()" class="view-details-btn">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+    <div class="container">
+       
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>Total Sales</h3>
+                <p id="totalSales">$0.00</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Transactions</h3>
+                <p id="totalTransactions">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Average Sale</h3>
+                <p id="averageSale">$0.00</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+        </div>
+
+        
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Sale ID</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="salesTableBody"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, where } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+    
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+    
+       
+        let currentCurrency = '৳';
+        let currentCurrencyCode = 'BDT';
+    
+        async function loadCurrencySettings() {
+            try {
+                const storeSnapshot = await getDocs(collection(db, 'storeInfo'));
+                if (!storeSnapshot.empty) {
+                    const storeData = storeSnapshot.docs[0].data();
+                    currentCurrency = storeData.currencySymbol || '৳';
+                    currentCurrencyCode = storeData.currency || 'BDT';
+                }
+            } catch (error) {
+                console.error('Error loading currency settings:', error);
+            }
+        }
+    
+        function formatCurrency(amount) {
+            return `${amount.toFixed(2)}${currentCurrency}`;
+        }
+    
+        async function loadUsers() {
+            const userFilter = document.getElementById('userFilter');
+            try {
+                // Change to fetch users from the 'users' collection instead
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                userFilter.innerHTML = '<option value="">All Users</option>';
+                
+                // Check if there are any users
+                if (usersSnapshot.empty) {
+                    console.log('No users found in the database');
+                    return;
+                }
+                
+                // Add each user to the dropdown
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (user.username) {
+                        const displayName = user.fullName ? `${user.username} (${user.fullName})` : user.username;
+                        userFilter.innerHTML += `
+                            <option value="${user.username}">${displayName} - ${user.role || 'User'}</option>
+                        `;
+                    }
+                });
+                
+                console.log(`Loaded ${usersSnapshot.size} users for filtering`);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                alert('Failed to load users. Please check the console for details.');
+            }
+        }
+    
+        async function loadUserSales() {
+            await loadCurrencySettings();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const selectedUser = document.getElementById('userFilter').value;
+        
+            // Set today's date as default for both start and end dates
+            if (!startDate && !endDate) {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('startDate').value = today;
+                document.getElementById('endDate').value = today;
+            }
+        
+            try {
+                let salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'));
+                
+                // If no dates are selected, filter for today
+                if (!startDate && !endDate) {
+                    const today = new Date().toISOString().split('T')[0];
+                    salesQuery = query(salesQuery,
+                        where('timestamp', '>=', today),
+                        where('timestamp', '<=', today + 'T23:59:59')
+                    );
+                } else if (startDate && endDate) {
+                    salesQuery = query(salesQuery, 
+                        where('timestamp', '>=', startDate),
+                        where('timestamp', '<=', endDate + 'T23:59:59')
+                    );
+                }
+        
+                const querySnapshot = await getDocs(salesQuery);
+                const salesData = [];
+                let totalAmount = 0;
+                let userSalesMap = {}; // Track sales by user
+        
+                querySnapshot.forEach((doc) => {
+                    const sale = doc.data();
+                    // Make sure username exists in the sale data
+                    const username = sale.username || 'Unknown';
+                    
+                    // Check if the sale matches the selected user filter
+                    if (!selectedUser || username.toLowerCase() === selectedUser.toLowerCase()) {
+                        salesData.push(sale);
+                        // Use totalAmount instead of grandTotal
+                        totalAmount += sale.totalAmount || 0;
+                        
+                        // Track sales by user for additional stats
+                        if (!userSalesMap[username]) {
+                            userSalesMap[username] = {
+                                count: 0,
+                                total: 0
+                            };
+                        }
+                        userSalesMap[username].count++;
+                        // Use totalAmount instead of grandTotal for user stats too
+                        userSalesMap[username].total += sale.totalAmount || 0;
+                    }
+                });
+        
+                // Sort users by sales total for reporting
+                const sortedUsers = Object.keys(userSalesMap).sort((a, b) => 
+                    userSalesMap[b].total - userSalesMap[a].total
+                );
+                
+                // Store the user sales data for the report
+                window.userSalesData = {
+                    map: userSalesMap,
+                    sorted: sortedUsers
+                };
+                
+                updateStats(salesData, totalAmount);
+                updateChart(salesData);
+                updateTable(salesData);
+                
+                // If we're looking at all users, show the user comparison chart
+                if (!selectedUser) {
+                    showUserComparisonChart(userSalesMap);
+                } else {
+                    // Hide the comparison chart if we're filtering by a specific user
+                    document.getElementById('userComparisonChart').style.display = 'none';
+                }
+        
+            } catch (error) {
+                console.error('Error loading sales:', error);
+                alert('Error loading sales data: ' + error.message);
+            }
+        }
+        
+        // Add a function to show user comparison chart
+        function showUserComparisonChart(userSalesMap) {
+            const comparisonChartContainer = document.getElementById('userComparisonChart');
+            if (!comparisonChartContainer) {
+                // Create the container if it doesn't exist
+                const container = document.createElement('div');
+                container.id = 'userComparisonChart';
+                container.className = 'chart-container';
+                container.innerHTML = '<canvas id="userComparisonCanvas"></canvas>';
+                
+                // Insert after the main chart
+                const mainChart = document.querySelector('.chart-container');
+                mainChart.parentNode.insertBefore(container, mainChart.nextSibling);
+            } else {
+                comparisonChartContainer.style.display = 'block';
+            }
+            
+            const ctx = document.getElementById('userComparisonCanvas').getContext('2d');
+            
+            // Get top 5 users by sales volume
+            const users = Object.keys(userSalesMap)
+                .sort((a, b) => userSalesMap[b].total - userSalesMap[a].total)
+                .slice(0, 5);
+                
+            const userData = users.map(user => userSalesMap[user].total);
+            
+            // Destroy existing chart if it exists
+            if (window.userCompChart) {
+                window.userCompChart.destroy();
+            }
+            
+            // Create the chart
+            window.userCompChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: users,
+                    datasets: [{
+                        label: 'Sales by User (Before VAT)',
+                        data: userData,
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Top 5 Users by Sales Volume'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    const count = userSalesMap[context.label].count;
+                                    return [
+                                        `Total: ${formatCurrency(value)}`,
+                                        `Transactions: ${count}`,
+                                        `Average: ${formatCurrency(value/count)}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    
+        function updateStats(salesData, totalAmount) {
+            document.getElementById('totalSales').textContent = formatCurrency(totalAmount);
+            document.getElementById('totalTransactions').textContent = salesData.length;
+            document.getElementById('averageSale').textContent = 
+                salesData.length > 0 ? formatCurrency(totalAmount / salesData.length) : formatCurrency(0);
+        }
+    
+        // Add this right after the Firebase initialization
+        let salesChart = null;
+    
+        // Update the updateChart function
+        function updateChart(salesData) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const timeFilter = document.getElementById('timeFilter').value;
+            
+            // Destroy existing chart if it exists
+            if (salesChart) {
+                salesChart.destroy();
+            }
+    
+            // Group sales data by date
+            const groupedSales = {};
+            salesData.forEach(sale => {
+                const date = new Date(sale.timestamp);
+                let key;
+    
+                switch(timeFilter) {
+                    case 'weekly':
+                        const monday = new Date(date);
+                        monday.setDate(date.getDate() - date.getDay() + 1);
+                        key = monday.toISOString().split('T')[0];
+                        break;
+                    case 'monthly':
+                        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        break;
+                    case 'yearly':
+                        key = date.getFullYear().toString();
+                        break;
+                    default: // daily
+                        key = date.toISOString().split('T')[0];
+                }
+    
+                // Use totalAmount instead of grandTotal
+                groupedSales[key] = (groupedSales[key] || 0) + (sale.totalAmount || 0);
+            });
+    
+            const sortedKeys = Object.keys(groupedSales).sort();
+    
+            // Create new chart
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedKeys.map(key => new Date(key).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Sales',
+                        data: sortedKeys.map(key => groupedSales[key]),
+                        borderColor: '#124e66',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    
+        function updateTable(salesData) {
+            const tableBody = document.getElementById('salesTableBody');
+            tableBody.innerHTML = '';
+        
+            if (salesData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" style="text-align: center;">No sales data found for the selected criteria</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+        
+            salesData.forEach((sale, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${new Date(sale.timestamp).toLocaleString()}</td>
+                    <td>${sale.username || 'Unknown'}</td>
+                    <td>${sale.saleId || 'N/A'}</td>
+                    <td>${sale.items ? sale.items.length : 0} items</td>
+                    <td>${formatCurrency(sale.totalAmount || 0)}</td>
+                    <td>
+                        <button class="view-details-btn" onclick="showSaleDetails('${sale.saleId}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    
+        window.showSaleDetails = async function(saleId) {
+            await loadCurrencySettings();
+            try {
+                const salesQuery = query(collection(db, 'sales'));
+                const querySnapshot = await getDocs(salesQuery);
+                let saleData;
+        
+                querySnapshot.forEach((doc) => {
+                    const sale = doc.data();
+                    if (sale.saleId === saleId) {
+                        saleData = sale;
+                    }
+                });
+        
+                if (saleData) {
+                    const detailsWindow = window.open('', '_blank', 'width=600,height=800');
+                    detailsWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Sale Details - ${saleId}</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; padding: 20px; }
+                                table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                                th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                                .header { text-align: center; margin-bottom: 20px; }
+                                .print-btn { 
+                                    padding: 10px 20px; 
+                                    background: #124e66; 
+                                    color: white; 
+                                    border: none; 
+                                    border-radius: 4px; 
+                                    cursor: pointer; 
+                                    margin: 20px 0;
+                                }
+                                @media print {
+                                    .print-btn { display: none; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>Sale Details</h2>
+                                <p>Sale ID: ${saleData.saleId}</p>
+                                <p>Date: ${new Date(saleData.timestamp).toLocaleString()}</p>
+                                <p>Cashier: ${saleData.username}</p>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${saleData.items.map(item => `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${item.quantity}</td>
+                                            <td>${formatCurrency(item.price)}</td>
+                                            <td>${formatCurrency(item.quantity * item.price)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <div style="text-align: right">
+                                <p><strong>Subtotal:</strong> ${formatCurrency(saleData.totalAmount)}</p>
+                                <p><strong>VAT:</strong> ${formatCurrency(saleData.totalVat)}</p>
+                                <p><strong>Total:</strong> ${formatCurrency(saleData.grandTotal)}</p>
+                            </div>
+                            <button class="print-btn" onclick="window.print()">Print Details</button>
+                        </body>
+                        </html>
+                    `);
+                }
+            } catch (error) {
+                console.error('Error showing sale details:', error);
+                alert('Error loading sale details');
+            }
+        };
+    
+        window.generateReport = async function() {
+            await loadCurrencySettings();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const selectedUser = document.getElementById('userFilter').value;
+            const totalSales = document.getElementById('totalSales').textContent;
+            const totalTransactions = document.getElementById('totalTransactions').textContent;
+            const averageSale = document.getElementById('averageSale').textContent;
+            
+            // Generate user performance section if we have the data
+            let userPerformanceHTML = '';
+            if (window.userSalesData && !selectedUser) {
+                userPerformanceHTML = `
+                    <h3>User Performance</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Transactions</th>
+                                <th>Total Sales</th>
+                                <th>Average Sale</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${window.userSalesData.sorted.map(user => {
+                                const data = window.userSalesData.map[user];
+                                return `
+                                    <tr>
+                                        <td>${user}</td>
+                                        <td>${data.count}</td>
+                                        <td>${formatCurrency(data.total)}</td>
+                                        <td>${formatCurrency(data.total / data.count)}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        
+            const reportWindow = window.open('', '_blank', 'width=800,height=600');
+            reportWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>User Sales Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .stats { 
+                            display: grid; 
+                            grid-template-columns: repeat(3, 1fr); 
+                            gap: 20px; 
+                            margin-bottom: 30px; 
+                        }
+                        .stat-card { 
+                            padding: 15px; 
+                            background: #f5f5f5; 
+                            border-radius: 4px; 
+                            text-align: center; 
+                        }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                        .print-btn { 
+                            padding: 10px 20px; 
+                            background: #124e66; 
+                            color: white; 
+                            border: none; 
+                            border-radius: 4px; 
+                            cursor: pointer; 
+                            margin: 20px 0;
+                        }
+                        @media print {
+                            .print-btn { display: none; }
+                        }
+                        h3 { 
+                            color: #124e66;
+                            margin-top: 30px;
+                            border-bottom: 1px solid #eee;
+                            padding-bottom: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>User Sales Report</h2>
+                        <p>Period: ${startDate || 'All time'} - ${endDate || 'Present'}</p>
+                        <p>User: ${selectedUser || 'All Users'}</p>
+                        <p>Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h3>Total Sales</h3>
+                            <p>${totalSales}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Transactions</h3>
+                            <p>${totalTransactions}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Average Sale</h3>
+                            <p>${averageSale}</p>
+                        </div>
+                    </div>
+                    
+                    ${userPerformanceHTML}
+                    
+                    <h3>Sales Transactions</h3>
+                    <div id="salesTable">
+                        ${document.querySelector('.sales-table').outerHTML}
+                    </div>
+                    <button class="print-btn" onclick="window.print()">Print Report</button>
+                </body>
+                </html>
+            `);
+            reportWindow.document.close();
+        };
+    
+        document.getElementById('startDate').addEventListener('change', loadUserSales);
+        document.getElementById('endDate').addEventListener('change', loadUserSales);
+        document.getElementById('userFilter').addEventListener('change', loadUserSales);
+        document.getElementById('timeFilter').addEventListener('change', loadUserSales);
+    
+        loadUsers();
+        loadUserSales();
+    </script>
+</body>
+</html>
