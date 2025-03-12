@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="customers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+   
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" ><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="pos.html"><i class="fas fa-shopping-cart"></i> Pos</a></li>
+            <li><a href="electronics-pos.html"><i class="fas fa-shopping-cart"></i> E-Pos</a></li>
+            <li><a href="inventory.html"><i class="fas fa-box"></i> Inventory</a></li>
+            <li><a href="vat.html"><i class="fas fa-percent"></i> Tax</a></li>
+            <li><a href="sales.html"><i class="fas fa-store"></i> Sales</a></li>
+            <li><a href="user-sales.html"><i class="fas fa-exclamation-triangle"></i> User-Management</a></li>
+            <li><a href="employee.html"><i class="fas fa-bars"></i> Employee</a></li>
+            <li><a href="expenses.html"><i class="fas fa-money-bill-wave"></i> Expenses</a></li>
+            <li><a href="customers.html"class="active"><i class="fas fa-users"></i> Customer</a></li>
+            <li><a href="ecommerce.html"><i class="fab fa-google-wallet"></i> Ecomerce</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <!-- Add this button next to the Add Customer button in the header -->
+        <header class="header">
+            <h1>Customer Management</h1>
+          
+        </header>
+        <div class="header-buttons">
+            <button onclick="showAddCustomerModal()" class="action-btn payment-btn">
+                <i class="fas fa-plus"></i> Add Customer
+            </button>
+            <button onclick="importCustomersFromSales()" class="action-btn edit-btn">
+                <i class="fas fa-file-import"></i> Import from Sales
+            </button>
+        </div>
+        <!-- Add this modal for importing customers -->
+        <div id="importModal" class="customer-modal">
+            <div class="modal-content">
+                <h2>Import Customers from Sales</h2>
+                <div id="salesCustomersList" class="sales-customers-list">
+                    <!-- Sales customers will be loaded here -->
+                    <p>Loading potential customers from sales history...</p>
+                </div>
+                <div class="action-buttons">
+                    <button onclick="closeImportModal()" class="action-btn delete-btn">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this style for the new elements -->
+       
+
+        <div class="customer-container">
+            <div class="customer-filters">
+                <select id="typeFilter" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                </select>
+                <select id="dueFilter" class="filter-select">
+                    <option value="">All Dues</option>
+                    <option value="with-due">With Due</option>
+                    <option value="no-due">No Due</option>
+                </select>
+                <input type="text" id="searchCustomer" class="filter-select" placeholder="Search customer...">
+            </div>
+
+            <table class="customer-table">
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Contact</th>
+                        <th>Total Purchase</th>
+                        <th>Due Amount</th>
+                        <th>Last Visit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customerTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Customer Modal -->
+    <div id="customerModal" class="customer-modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Customer</h2>
+            <form id="customerForm">
+                <div class="form-group">
+                    <label for="customerName">Name</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerType">Type</label>
+                    <select id="customerType" required>
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">Phone</label>
+                    <input type="tel" id="customerPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email</label>
+                    <input type="email" id="customerEmail">
+                </div>
+                <div class="form-group">
+                    <label for="customerAddress">Address</label>
+                    <input type="text" id="customerAddress">
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="action-btn payment-btn">Save</button>
+                    <button type="button" onclick="closeCustomerModal()" class="action-btn delete-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add this after the customer modal -->
+    <div id="paymentModal" class="customer-modal">
+        <div class="modal-content">
+            <h2>Adjust Due Amount</h2>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="customerInfo">Customer</label>
+                    <div id="customerInfo" class="customer-info-display"></div>
+                </div>
+                <div class="form-group">
+                    <label for="currentDue">Current Due</label>
+                    <div id="currentDue" class="due-display"></div>
+                </div>
+                <div class="form-group">
+                    <label for="adjustmentType">Adjustment Type</label>
+                    <select id="adjustmentType" required>
+                        <option value="payment">Payment (Reduce Due)</option>
+                        <option value="charge">Additional Charge (Increase Due)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="adjustmentAmount">Amount</label>
+                    <input type="number" id="adjustmentAmount" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="adjustmentNote">Note (Optional)</label>
+                    <textarea id="adjustmentNote" rows="2"></textarea>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="action-btn payment-btn">Save</button>
+                    <button type="button" onclick="closePaymentModal()" class="action-btn delete-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+   
+
+    <script type="module">
+        // Existing Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        // Update the Firebase imports to include getDoc
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Make sure getDoc is also added to the global window object
+        window.getDoc = getDoc;
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.appspot.com",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make functions and db accessible globally
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.query = query;
+        window.where = where;
+
+        let currentCurrency = '৳';
+        let currentCurrencyCode = 'BDT';
+    
+        async function loadCurrencySettings() {
+            try {
+                const storeSnapshot = await getDocs(collection(db, 'storeInfo'));
+                if (!storeSnapshot.empty) {
+                    const storeData = storeSnapshot.docs[0].data();
+                    currentCurrency = storeData.currencySymbol || '৳';
+                    currentCurrencyCode = storeData.currency || 'BDT';
+                    console.log('Currency settings loaded:', currentCurrency, currentCurrencyCode);
+                }
+            } catch (error) {
+                console.error('Error loading currency settings:', error);
+            }
+        }
+    
+        function formatCurrency(amount) {
+            // Make sure amount is a number and handle null/undefined values
+            const numAmount = parseFloat(amount || 0);
+            return `${numAmount.toFixed(2)}${currentCurrency}`;
+        }
+        
+        // Make sure to call loadCurrencySettings at the start
+        window.onload = async function() {
+            await loadCurrencySettings();
+            loadCustomers();
+        };
+        
+        // Function to import customers from sales history
+     // Function to import customers from sales history
+window.importCustomersFromSales = async function() {
+    await loadCurrencySettings();
+    const importModal = document.getElementById('importModal');
+    const salesCustomersList = document.getElementById('salesCustomersList');
+    salesCustomersList.innerHTML = '<p>Loading potential customers from sales history...</p>';
+    importModal.style.display = 'block';
+    
+    try {
+        // Get existing customers to avoid duplicates
+        const existingCustomers = new Set();
+        const customerSnapshot = await getDocs(collection(db, 'customers'));
+        customerSnapshot.forEach(doc => {
+            const customer = doc.data();
+            if (customer.phone) existingCustomers.add(customer.phone);
+            if (customer.email) existingCustomers.add(customer.email);
+        });
+        
+        // Get sales data from both regular and electronic sales
+        const potentialCustomers = new Map();
+        
+        // Process regular sales
+        const salesSnapshot = await getDocs(collection(db, 'sales'));
+        // Process electronic sales
+        const electronicSalesSnapshot = await getDocs(collection(db, 'electronicSales'));
+        
+        let salesWithCustomerData = 0;
+        
+        // Process regular sales
+        salesSnapshot.forEach(doc => {
+            const saleData = doc.data();
+            processSaleData(saleData, 'Regular Sale', potentialCustomers, existingCustomers);
+            if (saleData.customer || saleData.customerInfo) salesWithCustomerData++;
+        });
+        
+        // Process electronic sales
+        electronicSalesSnapshot.forEach(doc => {
+            const saleData = doc.data();
+            processSaleData(saleData, 'Electronic Sale', potentialCustomers, existingCustomers);
+            if (saleData.customer || saleData.customerInfo) salesWithCustomerData++;
+        });
+
+        // Helper function to process sale data
+       // Helper function to process sale data
+// Helper function to process sale data
+// Helper function to process sale data
+function processSaleData(sale, saleType, potentialCustomers, existingCustomers) {
+    // Try to extract customer info from different possible structures
+    let customerInfo = sale.customer || sale.customerInfo || {};
+    
+    let name = '', phone = '', email = '';
+    
+    if (typeof customerInfo === 'object') {
+        name = customerInfo.name || '';
+        phone = customerInfo.phone || '';
+        email = customerInfo.email || '';
+    } else if (typeof customerInfo === 'string') {
+        name = customerInfo;
+    }
+    
+    // If we have no customer data, try to look in other possible locations
+    if (!name && !phone && !email) {
+        // Check if customer data might be nested differently
+        if (sale.customer && typeof sale.customer === 'object') {
+            const customer = sale.customer;
+            name = customer.name || '';
+            phone = customer.phone || customer.phoneNumber || '';
+            email = customer.email || '';
+        }
+        
+        // For electronics-pos, check for specific fields
+        if (sale.saleType === 'electronics' || saleType === 'Electronic Sale') {
+            name = sale.customerName || '';
+            phone = sale.customerPhone || '';
+            email = sale.customerEmail || '';
+            console.log('Found electronics sale customer:', name, phone, email);
+        }
+    }
+    
+    if (name || phone || email) {
+        if ((phone && existingCustomers.has(phone)) || 
+            (email && existingCustomers.has(email))) {
+            return;
+        }
+        
+        const key = phone || email || name;
+        if (!key) return;
+        
+        const total = sale.grandTotal || sale.total || sale.amount || 0;
+        const date = sale.timestamp || sale.date || sale.createdAt || new Date().toISOString();
+        
+        // Extract due amount based on payment information
+        let dueAmount = 0;
+        
+        // For electronic sales, check payment details
+        if (saleType === 'Electronic Sale') {
+            // Check if there's a payment object
+            if (sale.payment && typeof sale.payment === 'object') {
+                const payment = sale.payment;
+                // If payment method is "due" or there's a dueAmount field
+                if (payment.method === 'due' || payment.dueAmount) {
+                    dueAmount = parseFloat(payment.dueAmount || payment.amount || 0);
+                }
+            } else if (sale.paymentMethod === 'due') {
+                // Direct payment method is due
+                dueAmount = parseFloat(sale.dueAmount || sale.remainingAmount || sale.due || 0);
+            }
+            
+            // If we have a paymentDetails array, check for due payments
+            if (sale.paymentDetails && Array.isArray(sale.paymentDetails)) {
+                const duePayment = sale.paymentDetails.find(p => p.method === 'due');
+                if (duePayment) {
+                    dueAmount = parseFloat(duePayment.amount || 0);
+                }
+            }
+            
+            console.log('Found due amount for electronic sale:', dueAmount);
+        } else {
+            // For regular sales
+            dueAmount = parseFloat(sale.dueAmount || sale.due || sale.remainingAmount || 0);
+        }
+        
+        if (potentialCustomers.has(key)) {
+            const existing = potentialCustomers.get(key);
+            existing.totalPurchase += parseFloat(total) || 0;
+            existing.purchaseCount++;
+            existing.due += dueAmount;
+            if (new Date(date) > new Date(existing.lastVisit)) {
+                existing.lastVisit = date;
+            }
+            existing.sources.add(saleType);
+        } else {
+            potentialCustomers.set(key, {
+                name: name || 'Unknown',
+                phone: phone || '',
+                email: email || '',
+                totalPurchase: parseFloat(total) || 0,
+                purchaseCount: 1,
+                due: dueAmount,
+                lastVisit: date,
+                sources: new Set([saleType])
+            });
+        }
+    }
+}
+        
+        // Display potential customers
+        salesCustomersList.innerHTML = '';
+        
+        if (potentialCustomers.size === 0) {
+            salesCustomersList.innerHTML = `<p>No new customers found in sales history. 
+                Found ${salesWithCustomerData} sales with customer data.</p>`;
+            return;
+        }
+        
+        salesCustomersList.innerHTML = `<p>Found ${salesWithCustomerData} sales with customer data. 
+            Displaying ${potentialCustomers.size} new potential customers.</p>`;
+        
+            potentialCustomers.forEach((customer, key) => {
+    const customerCard = document.createElement('div');
+    customerCard.className = 'customer-card';
+    customerCard.innerHTML = `
+        <div class="customer-info">
+            <h4>${customer.name}</h4>
+            <p>${customer.phone || 'No phone'} | ${customer.email || 'No email'}</p>
+            <p>Purchases: ${customer.purchaseCount} | Total: ${formatCurrency(customer.totalPurchase)}</p>
+            <p>Due Amount: ${formatCurrency(customer.due)}</p>
+            <p class="customer-source">Sources: ${Array.from(customer.sources).join(', ')}</p>
+        </div>
+        <button onclick="addCustomerFromSales('${key}')" class="import-btn">
+            <i class="fas fa-plus"></i> Add
+        </button>
+    `;
+    salesCustomersList.appendChild(customerCard);
+});
+        
+        // Store potential customers in a global variable for later use
+        window.potentialCustomers = Object.fromEntries(
+            Array.from(potentialCustomers.entries()).map(([key, value]) => [
+                key,
+                {...value, sources: Array.from(value.sources)}
+            ])
+        );
+        
+    } catch (error) {
+        console.error('Error loading sales data:', error);
+        salesCustomersList.innerHTML = `<p>Error loading sales data: ${error.message}. Check console for details.</p>`;
+    }
+};
+        // Function to add a customer from sales data
+       // Function to add a customer from sales data
+       window.addCustomerFromSales = async function(key) {
+    const customer = window.potentialCustomers[key];
+    if (!customer) return;
+    
+    try {
+        // Generate a unique customer ID
+        const customerId = 'CUST' + Math.floor(100000 + Math.random() * 900000);
+        
+        // Add customer to database
+        await addDoc(collection(db, 'customers'), {
+            id: customerId,
+            name: customer.name,
+            type: 'offline', // Default type
+            phone: customer.phone,
+            email: customer.email,
+            address: '',
+            totalPurchase: customer.totalPurchase,
+            due: customer.due || 0, // Import due amount from sales
+            lastVisit: customer.lastVisit,
+            createdAt: new Date().toISOString(),
+            source: customer.sources ? customer.sources.join(', ') : 'Sales Import'
+        });
+        
+        // Rest of the function remains the same
+        
+        // Remove from potential customers list
+        delete window.potentialCustomers[key];
+        const customerElement = document.querySelector(`.customer-card button[onclick="addCustomerFromSales('${key}')"]`);
+        if (customerElement) {
+            customerElement.closest('.customer-card').remove();
+        }
+        
+        // Show success message
+        alert(`Customer ${customer.name} added successfully!`);
+        
+        // Reload customers list
+        loadCustomers();
+        
+        // If no more potential customers, close modal
+        if (Object.keys(window.potentialCustomers).length === 0) {
+            document.getElementById('salesCustomersList').innerHTML = 
+                '<p>No more customers to import.</p>';
+        }
+        
+    } catch (error) {
+        console.error('Error adding customer:', error);
+        alert('Error adding customer. Please try again.');
+    }
+};
+        
+        // Function to close import modal
+        window.closeImportModal = function() {
+            document.getElementById('importModal').style.display = 'none';
+        };
+
+        // Load customers function
+        async function loadCustomers() {
+            const tableBody = document.getElementById('customerTableBody');
+            const typeFilter = document.getElementById('typeFilter').value;
+            const dueFilter = document.getElementById('dueFilter').value;
+            const searchQuery = document.getElementById('searchCustomer').value.toLowerCase();
+            
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Loading customers...</td></tr>';
+            
+            try {
+                let q = collection(db, 'customers');
+                
+                // Apply filters if selected
+                if (typeFilter) {
+                    q = query(q, where('type', '==', typeFilter));
+                }
+                
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No customers found</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = '';
+                
+                querySnapshot.forEach((doc) => {
+                    const customer = doc.data();
+                    
+                    // Apply due filter
+                    if (dueFilter === 'with-due' && (!customer.due || customer.due <= 0)) return;
+                    if (dueFilter === 'no-due' && customer.due > 0) return;
+                    
+                    // Apply search filter
+                    const searchString = `${customer.name} ${customer.phone} ${customer.email} ${customer.id}`.toLowerCase();
+                    if (searchQuery && !searchString.includes(searchQuery)) return;
+                    
+                    // Format date
+                    let lastVisit = 'Never';
+                    if (customer.lastVisit) {
+                        try {
+                            const date = new Date(customer.lastVisit);
+                            lastVisit = date.toLocaleDateString();
+                        } catch (e) {
+                            console.error("Date formatting error:", e);
+                        }
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${customer.id || '-'}</td>
+                        <td>${customer.name || '-'}</td>
+                        <td><span class="status-${customer.type}">${customer.type || 'unknown'}</span></td>
+                        <td>${customer.phone || '-'}<br>${customer.email || '-'}</td>
+                          <td>${formatCurrency(customer.totalPurchase || 0)}</td>
+                         <td class="${customer.due > 0 ? 'due-positive' : 'due-negative'}">
+                            ${formatCurrency(customer.due || 0)}
+                        </td>
+                        <td>${lastVisit}</td>
+                       
+                        <td>
+                            <div class="action-buttons">
+                                <button onclick="editCustomer('${doc.id}')" class="action-btn edit-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="showPaymentModal('${doc.id}')" class="action-btn payment-btn">
+                                    <i class="fas fa-money-bill"></i>
+                                </button>
+                                <button onclick="showTransactionHistory('${doc.id}')" class="action-btn history-btn">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                                <button onclick="deleteCustomer('${doc.id}')" class="action-btn delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error loading customers:", error);
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Error loading customers: ${error.message}</td></tr>`;
+            }
+        }
+
+        // Add these functions for editing and deleting customers
+        window.editCustomer = async function(customerId) {
+            try {
+                const customerDoc = await getDoc(doc(db, 'customers', customerId));
+                if (!customerDoc.exists()) {
+                    alert('Customer not found');
+                    return;
+                }
+                
+                const customer = customerDoc.data();
+                
+                // Populate form fields
+                document.getElementById('customerName').value = customer.name || '';
+                document.getElementById('customerType').value = customer.type || 'offline';
+                document.getElementById('customerPhone').value = customer.phone || '';
+                document.getElementById('customerEmail').value = customer.email || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+                
+                // Set form data attribute for update
+                document.getElementById('customerForm').setAttribute('data-customer-id', customerId);
+                
+                // Update modal title
+                document.getElementById('modalTitle').textContent = 'Edit Customer';
+                
+                // Show modal
+                document.getElementById('customerModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading customer for edit:', error);
+                alert('Error loading customer data. Please try again.');
+            }
+        };
+
+        window.deleteCustomer = async function(customerId) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                try {
+                    await deleteDoc(doc(db, 'customers', customerId));
+                    alert('Customer deleted successfully');
+                    loadCustomers();
+                } catch (error) {
+                    console.error('Error deleting customer:', error);
+                    alert('Error deleting customer. Please try again.');
+                }
+            }
+        };
+
+        // Add these functions for the payment modal
+        window.showPaymentModal = async function(customerId) {
+            try {
+                const customerDoc = await getDoc(doc(db, 'customers', customerId));
+                if (!customerDoc.exists()) {
+                    alert('Customer not found');
+                    return;
+                }
+                
+                const customer = customerDoc.data();
+                
+                // Display customer info
+                document.getElementById('customerInfo').innerHTML = `
+                    <strong>${customer.name}</strong><br>
+                    ${customer.phone || 'No phone'} | ${customer.email || 'No email'}
+                `;
+                
+                // Display current due
+                const dueAmount = parseFloat(customer.due || 0).toFixed(2);
+                document.getElementById('currentDue').innerHTML = `
+                    <strong class="${customer.due > 0 ? 'due-positive' : 'due-negative'}">
+                       ${formatCurrency(customer.due || 0)}
+                    </strong>
+                `;
+                
+                // Set form data attribute for update
+                document.getElementById('paymentForm').setAttribute('data-customer-id', customerId);
+                document.getElementById('paymentForm').setAttribute('data-current-due', customer.due || 0);
+                
+                // Reset form fields
+                document.getElementById('adjustmentType').value = 'payment';
+                document.getElementById('adjustmentAmount').value = '';
+                document.getElementById('adjustmentNote').value = '';
+                
+                // Show modal
+                document.getElementById('paymentModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading customer for payment:', error);
+                alert('Error loading customer data. Please try again.');
+            }
+        };
+        
+        window.closePaymentModal = function() {
+            document.getElementById('paymentModal').style.display = 'none';
+        };
+        
+        // After the payment form submit handler, add this new function for receipt generation
+        
+        // Function to generate and print receipt
+        window.generateReceipt = async function(customerId, adjustmentType, amount, previousDue, newDue, note, timestamp) {
+            try {
+                // Get customer details
+                const customerDoc = await getDoc(doc(db, 'customers', customerId));
+                if (!customerDoc.exists()) {
+                    console.error('Customer not found for receipt');
+                    return;
+                }
+                
+                const customer = customerDoc.data();
+                
+                // Create receipt window
+                const receiptWindow = window.open('', '_blank', 'width=800,height=600');
+                
+                // Format date
+                const receiptDate = new Date(timestamp);
+                const formattedDate = receiptDate.toLocaleDateString();
+                const formattedTime = receiptDate.toLocaleTimeString();
+                
+                // Generate receipt number
+                const receiptNumber = 'RCT-' + Date.now().toString().slice(-8);
+                
+                // Set receipt content
+                receiptWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Payment Receipt</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 0;
+                                padding: 20px;
+                                color: #333;
+                            }
+                            .receipt {
+                                max-width: 800px;
+                                margin: 0 auto;
+                                border: 1px solid #ddd;
+                                padding: 20px;
+                                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                            }
+                            .receipt-header {
+                                text-align: center;
+                                border-bottom: 2px solid #333;
+                                padding-bottom: 10px;
+                                margin-bottom: 20px;
+                            }
+                            .receipt-title {
+                                font-size: 24px;
+                                font-weight: bold;
+                                margin: 10px 0;
+                            }
+                            .receipt-subtitle {
+                                font-size: 16px;
+                                color: #666;
+                            }
+                            .receipt-info {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 20px;
+                            }
+                            .receipt-info-item {
+                                flex: 1;
+                            }
+                            .receipt-info-label {
+                                font-weight: bold;
+                                margin-bottom: 5px;
+                            }
+                            .receipt-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin: 20px 0;
+                            }
+                            .receipt-table th, .receipt-table td {
+                                padding: 10px;
+                                border: 1px solid #ddd;
+                                text-align: left;
+                            }
+                            .receipt-table th {
+                                background-color: #f5f5f5;
+                            }
+                            .receipt-total {
+                                text-align: right;
+                                font-weight: bold;
+                                font-size: 18px;
+                                margin: 20px 0;
+                            }
+                            .receipt-note {
+                                margin: 20px 0;
+                                padding: 10px;
+                                background-color: #f9f9f9;
+                                border-left: 4px solid #ddd;
+                            }
+                            .receipt-signatures {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-top: 50px;
+                            }
+                            .signature-box {
+                                flex: 1;
+                                max-width: 45%;
+                                text-align: center;
+                            }
+                            .signature-line {
+                                border-top: 1px solid #333;
+                                margin-top: 50px;
+                                margin-bottom: 10px;
+                            }
+                            .print-button {
+                                display: block;
+                                margin: 20px auto;
+                                padding: 10px 20px;
+                                background-color: #4CAF50;
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            }
+                            @media print {
+                                .print-button {
+                                    display: none;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="receipt">
+                            <div class="receipt-header">
+                                <div class="receipt-title">PAYMENT RECEIPT</div>
+                                <div class="receipt-subtitle">SuperShop Management System</div>
+                            </div>
+                            
+                            <div class="receipt-info">
+                                <div class="receipt-info-item">
+                                    <div class="receipt-info-label">Receipt No:</div>
+                                    <div>${receiptNumber}</div>
+                                </div>
+                                <div class="receipt-info-item">
+                                    <div class="receipt-info-label">Date:</div>
+                                    <div>${formattedDate}</div>
+                                </div>
+                                <div class="receipt-info-item">
+                                    <div class="receipt-info-label">Time:</div>
+                                    <div>${formattedTime}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="receipt-info">
+                                <div class="receipt-info-item">
+                                    <div class="receipt-info-label">Customer ID:</div>
+                                    <div>${customer.id || 'N/A'}</div>
+                                </div>
+                                <div class="receipt-info-item">
+                                    <div class="receipt-info-label">Customer Name:</div>
+                                    <div>${customer.name || 'N/A'}</div>
+                                </div>
+                                <div class="receipt-info-item">
+                                    <div class="receipt-info-label">Contact:</div>
+                                    <div>${customer.phone || 'N/A'}</div>
+                                </div>
+                            </div>
+                            
+                            <table class="receipt-table">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Previous Due</th>
+                                        <th>Amount</th>
+                                        <th>New Due</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   <tr>
+                                        <td>${adjustmentType === 'payment' ? 'Payment Received' : 'Additional Charge'}</td>
+                                        <td>${formatCurrency(previousDue)}</td>
+                                        <td>${formatCurrency(amount)}</td>
+                                        <td>${formatCurrency(newDue)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div class="receipt-total">
+                                ${adjustmentType === 'payment' ? 'Amount Received: ' : 'Amount Charged: '}
+                                ${formatCurrency(amount)}
+                            </div>
+                            
+                            ${note ? `<div class="receipt-note">
+                                <strong>Note:</strong> ${note}
+                            </div>` : ''}
+                            
+                            <div class="receipt-signatures">
+                                <div class="signature-box">
+                                    <div class="signature-line"></div>
+                                    <div>Customer Signature</div>
+                                </div>
+                                <div class="signature-box">
+                                    <div class="signature-line"></div>
+                                    <div>Authorized Signature</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="print-button" onclick="window.print(); return false;">Print Receipt</button>
+                    </body>
+                    </html>
+                `);
+                
+                receiptWindow.document.close();
+                
+            } catch (error) {
+                console.error('Error generating receipt:', error);
+                alert('Error generating receipt. Please try again.');
+            }
+        };
+        
+        // Update the payment form submit handler to generate receipt after successful transaction
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const customerId = this.getAttribute('data-customer-id');
+            const currentDue = parseFloat(this.getAttribute('data-current-due'));
+            const adjustmentType = document.getElementById('adjustmentType').value;
+            const adjustmentAmount = parseFloat(document.getElementById('adjustmentAmount').value);
+            const adjustmentNote = document.getElementById('adjustmentNote').value;
+            
+            if (!customerId || isNaN(adjustmentAmount) || adjustmentAmount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            try {
+                // Calculate new due amount
+                let newDue = currentDue;
+                if (adjustmentType === 'payment') {
+                    newDue = Math.max(0, currentDue - adjustmentAmount); // Ensure due doesn't go below 0
+                } else if (adjustmentType === 'charge') {
+                    newDue = currentDue + adjustmentAmount;
+                }
+                
+                // Update customer due
+                await updateDoc(doc(db, 'customers', customerId), {
+                    due: newDue
+                });
+                
+                // Get current timestamp
+                const timestamp = new Date().toISOString();
+                
+                // Record the transaction in a separate collection for history
+                await addDoc(collection(db, 'dueAdjustments'), {
+                    customerId: customerId,
+                    type: adjustmentType,
+                    amount: adjustmentAmount,
+                    previousDue: currentDue,
+                    newDue: newDue,
+                    note: adjustmentNote,
+                    timestamp: timestamp
+                });
+                
+                alert(`Due amount ${adjustmentType === 'payment' ? 'payment' : 'charge'} recorded successfully!`);
+                
+                // Generate receipt
+                generateReceipt(customerId, adjustmentType, adjustmentAmount, currentDue, newDue, adjustmentNote, timestamp);
+                
+                closePaymentModal();
+                loadCustomers(); // Reload the customer list to show updated due
+            } catch (error) {
+                console.error('Error updating due amount:', error);
+                alert('Error updating due amount. Please try again.');
+            }
+        });
+        // Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadCustomers();
+});
+
+// Event listeners for filters
+document.getElementById('typeFilter').addEventListener('change', loadCustomers);
+document.getElementById('dueFilter').addEventListener('change', loadCustomers);
+document.getElementById('searchCustomer').addEventListener('input', loadCustomers);
+
+// Add this form submission handler for the customer form
+// Add this form submission handler for the customer form
+document.getElementById('customerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const customerId = this.getAttribute('data-customer-id');
+    const name = document.getElementById('customerName').value.trim();
+    const type = document.getElementById('customerType').value;
+    const phone = document.getElementById('customerPhone').value.trim();
+    const email = document.getElementById('customerEmail').value.trim();
+    const address = document.getElementById('customerAddress').value.trim();
+    
+    if (!name) {
+        alert('Please enter customer name');
+        return;
+    }
+    
+    try {
+        // If we're updating an existing customer, proceed normally
+        if (customerId) {
+            // Update existing customer
+            await updateDoc(doc(db, 'customers', customerId), {
+                name: name,
+                type: type,
+                phone: phone,
+                email: email,
+                address: address,
+                updatedAt: new Date().toISOString()
+            });
+            
+            alert('Customer updated successfully!');
+        } else {
+            // Check for existing customers with the same phone or email
+            let duplicateFound = false;
+            let duplicateField = '';
+            
+            if (phone) {
+                const phoneQuery = query(collection(db, 'customers'), where('phone', '==', phone));
+                const phoneSnapshot = await getDocs(phoneQuery);
+                if (!phoneSnapshot.empty) {
+                    duplicateFound = true;
+                    duplicateField = 'phone number';
+                }
+            }
+            
+            if (!duplicateFound && email) {
+                const emailQuery = query(collection(db, 'customers'), where('email', '==', email));
+                const emailSnapshot = await getDocs(emailQuery);
+                if (!emailSnapshot.empty) {
+                    duplicateFound = true;
+                    duplicateField = 'email';
+                }
+            }
+            
+            if (duplicateFound) {
+                alert(`A customer with this ${duplicateField} already exists. Please check and try again.`);
+                return;
+            }
+            
+            // Generate a unique customer ID
+            const newCustomerId = 'CUST' + Math.floor(100000 + Math.random() * 900000);
+            
+            // Add new customer
+            await addDoc(collection(db, 'customers'), {
+                id: newCustomerId,
+                name: name,
+                type: type,
+                phone: phone,
+                email: email,
+                address: address,
+                totalPurchase: 0,
+                due: 0,
+                lastVisit: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+            
+            alert('Customer added successfully!');
+        }
+        
+        // Close modal and reset form
+        closeCustomerModal();
+        this.reset();
+        this.removeAttribute('data-customer-id');
+        document.getElementById('modalTitle').textContent = 'Add Customer';
+        
+        // Reload customers list
+        loadCustomers();
+        
+    } catch (error) {
+        console.error('Error saving customer:', error);
+        alert('Error saving customer. Please try again.');
+    }
+});
+
+// Add this function to close the customer modal
+window.closeCustomerModal = function() {
+    const modal = document.getElementById('customerModal');
+    modal.style.display = 'none';
+    document.getElementById('customerForm').reset();
+};
+
+// Add this function to show the add customer modal
+window.showAddCustomerModal = function() {
+    const modal = document.getElementById('customerModal');
+    document.getElementById('modalTitle').textContent = 'Add Customer';
+    document.getElementById('customerForm').removeAttribute('data-customer-id');
+    document.getElementById('customerForm').reset();
+    modal.style.display = 'block';
+};
+
+// Add these functions for transaction history after the generateReceipt function
+window.showTransactionHistory = async function(customerId) {
+    await loadCurrencySettings(); 
+    try {
+        const customerDoc = await getDoc(doc(db, 'customers', customerId));
+        if (!customerDoc.exists()) {
+            alert('Customer not found');
+            return;
+        }
+        
+        const customer = customerDoc.data();
+        
+        // Display customer info
+        document.getElementById('customerHistoryInfo').innerHTML = `
+            <strong>${customer.name}</strong> (${customer.id || 'No ID'})<br>
+            ${customer.phone || 'No phone'} | ${customer.email || 'No email'}<br>
+            Current Due: <span class="${customer.due > 0 ? 'due-positive' : 'due-negative'}">
+                ${formatCurrency(customer.due || 0)}
+            </span>
+        `;
+        
+        // Store customer ID for printing
+        document.getElementById('transactionHistoryModal').setAttribute('data-customer-id', customerId);
+        
+        // Load transaction history
+        const historyList = document.getElementById('transactionHistoryList');
+        historyList.innerHTML = '<p>Loading transaction history...</p>';
+        
+        // Query due adjustments for this customer
+        const q = query(
+            collection(db, 'dueAdjustments'), 
+            where('customerId', '==', customerId)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            historyList.innerHTML = '<p>No transaction history found for this customer.</p>';
+            return;
+        }
+        
+        // Sort transactions by timestamp (newest first)
+        const transactions = [];
+        querySnapshot.forEach(doc => {
+            transactions.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        transactions.sort((a, b) => {
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+        
+        // Display transactions
+        historyList.innerHTML = '';
+        transactions.forEach(transaction => {
+            const date = new Date(transaction.timestamp);
+            const formattedDate = date.toLocaleDateString();
+            const formattedTime = date.toLocaleTimeString();
+            
+            const transactionItem = document.createElement('div');
+            transactionItem.className = `transaction-item ${transaction.type}`;
+            transactionItem.innerHTML = `
+                <div class="transaction-header">
+                    <span class="transaction-type ${transaction.type}">
+                        ${transaction.type === 'payment' ? 'Payment Received' : 'Additional Charge'}
+                    </span>
+                    <span class="transaction-date">${formattedDate} ${formattedTime}</span>
+                </div>
+               <div class="transaction-details">
+                                <div>
+                                    Previous Due: ${formatCurrency(transaction.previousDue)}<br>
+                                    New Due: ${formatCurrency(transaction.newDue)}
+                                </div>
+                                <div class="transaction-amount">
+                                    ${formatCurrency(transaction.amount)}
+                                </div>
+                            </div>
+                ${transaction.note ? `<div class="transaction-note">${transaction.note}</div>` : ''}
+                <div class="action-buttons">
+                    <button onclick="printSingleTransaction('${transaction.id}')" class="action-btn edit-btn">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </button>
+                </div>
+            `;
+            historyList.appendChild(transactionItem);
+        });
+        
+        // Show modal
+        document.getElementById('transactionHistoryModal').style.display = 'block';
+    } catch (error) {
+        console.error('Error loading transaction history:', error);
+        alert('Error loading transaction history. Please try again.');
+    }
+};
+
+window.closeTransactionHistoryModal = function() {
+    document.getElementById('transactionHistoryModal').style.display = 'none';
+};
+
+window.printSingleTransaction = async function(transactionId) {
+    try {
+        const transactionDoc = await getDoc(doc(db, 'dueAdjustments', transactionId));
+        if (!transactionDoc.exists()) {
+            alert('Transaction not found');
+            return;
+        }
+        
+        const transaction = transactionDoc.data();
+        const customerId = transaction.customerId;
+        
+        // Generate receipt for this transaction
+        generateReceipt(
+            customerId, 
+            transaction.type, 
+            transaction.amount, 
+            transaction.previousDue, 
+            transaction.newDue, 
+            transaction.note, 
+            transaction.timestamp
+        );
+    } catch (error) {
+        console.error('Error printing transaction:', error);
+        alert('Error printing transaction. Please try again.');
+    }
+};
+
+
+    </script>
+    <script src="customer.js"></script>
+</body>
+</html>
+
+<!-- Add this after the payment modal -->
+<div id="transactionHistoryModal" class="customer-modal">
+    <div class="modal-content transaction-modal-content">
+        <h2>Transaction History</h2>
+        <div id="customerHistoryInfo" class="customer-info-display"></div>
+        <div id="transactionHistoryList" class="transaction-history-list">
+            <p>Loading transaction history...</p>
+        </div>
+        <div class="action-buttons">
+            <button onclick="printTransactionHistory()" class="action-btn payment-btn">
+                <i class="fas fa-print"></i> Print History
+            </button>
+            <button onclick="closeTransactionHistoryModal()" class="action-btn delete-btn">Close</button>
+        </div>
+    </div>
+</div>

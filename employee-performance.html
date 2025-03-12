@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Performance & Payroll</title>
+    
+    <link rel="stylesheet" href="employee-performance.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body>
+   
+
+    <div class="main-content">
+        <header class="header">
+            <button onclick="window.history.back()" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h1>Employee Performance & Payroll Management</h1>
+        </header>
+
+        <div class="container">
+            <div class="performance-grid">
+                <!-- Employee Selection -->
+                <!-- Add these lines in the <head> section, after your existing CSS links -->
+               
+                
+                <!-- Update the employee select element -->
+                <div class="card employee-select">
+                    <h2>Select Employee</h2>
+                    <select id="employeeSelect" class="form-control select2">
+                        <option value="">Choose an employee...</option>
+                    </select>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="card performance-metrics">
+                    <h2>Performance Metrics</h2>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <i class="fas fa-clock"></i>
+                            <div class="metric-info">
+                                <h3>Working Hours</h3>
+                                <p id="workingHours">0 hrs</p>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <i class="fas fa-calendar-times"></i>
+                            <div class="metric-info">
+                                <h3>Leave Days</h3>
+                                <p id="leaveDays">0 days</p>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <i class="fas fa-star"></i>
+                            <div class="metric-info">
+                                <h3>Performance Score</h3>
+                                <p id="performanceScore">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Calculator -->
+                <div class="card salary-calculator">
+                    <h2>Salary Calculator</h2>
+                    <!-- Add this after the salary calculator h2 -->
+                    <div class="month-selector">
+                        <select id="monthSelect" class="form-control">
+                            <option value="">Select Month...</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                        <select id="yearSelect" class="form-control">
+                            <!-- Will be populated with JavaScript -->
+                        </select>
+                    </div>
+                    <div class="calculator-grid">
+                        <div class="form-group">
+                            <label>Base Salary</label>
+                            <input type="number" id="baseSalary" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Hourly Rate</label>
+                            <input type="number" id="hourlyRate" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Overtime Hours</label>
+                            <input type="number" id="overtimeHours" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Bonus (%)</label>
+                            <input type="number" id="bonus" class="form-control" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Deductions</label>
+                            <input type="number" id="deductions" class="form-control">
+                        </div>
+                        <div class="total-salary">
+                            <h3>Total Salary</h3>
+                            <p id="totalSalary">$0.00</p>
+                        </div>
+                    </div>
+                
+                    <div class="button-group">
+                        <button id="calculateSalary" class="btn-primary">Calculate Salary</button>
+                        <button id="confirmSalary" class="btn-success" disabled>Confirm & Save</button>
+                    </div>
+                </div>
+              
+                <!-- Leave Management -->
+                <!-- Replace the existing leave management section with this -->
+                <div class="card leave-management">
+                    <h2>Employee Management</h2>
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="salary">Salary History</button>
+                        <button class="tab-button" data-tab="leave">Leave Management</button>
+                        <button class="tab-button" data-tab="advance">Advance Salary</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="salary-tab">
+                        <div id="salaryHistory" class="salary-history-grid"></div>
+                    </div>
+                    
+                    <div class="tab-content" id="leave-tab">
+                        <div class="leave-form">
+                            <div class="form-group">
+                                <label>Leave Type</label>
+                                <select id="leaveType" class="form-control">
+                                    <option value="sick">Sick Leave</option>
+                                    <option value="vacation">Vacation</option>
+                                    <option value="personal">Personal</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input type="date" id="leaveStart" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>End Date</label>
+                                <input type="date" id="leaveEnd" class="form-control">
+                            </div>
+                            <button id="submitLeave" class="btn-primary">Submit Leave Request</button>
+                        </div>
+                        <div class="leave-history">
+                            <h3>Leave History</h3>
+                            <div id="leaveHistory"></div>
+                        </div>
+                    </div>
+
+                    
+<div class="tab-content" id="advance-tab">
+    <div class="advance-form">
+        <div class="form-group">
+            <label>Advance Amount</label>
+            <input type="number" id="advanceAmount" class="form-control" min="0">
+            <small class="text-muted">Maximum allowed: 50% of base salary</small>
+        </div>
+        <div class="form-group">
+            <label>Reason</label>
+            <textarea id="advanceReason" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Repayment Months</label>
+            <select id="repaymentMonths" class="form-control">
+                <option value="1">1 Month</option>
+                <option value="2">2 Months</option>
+                <option value="3">3 Months</option>
+            </select>
+        </div>
+        <button id="submitAdvance" class="btn-primary">Request Advance</button>
+    </div>
+    <div class="advance-history">
+        <h3>Advance History</h3>
+        <div id="advanceHistory"></div>
+    </div>
+</div>
+                </div>
+                <!-- Salary History -->
+
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, addDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);  // Add this line
+
+// Add after Firebase initialization
+let isAdminOrManager = false;
+
+// Add to the DOMContentLoaded event listener
+window.addEventListener('DOMContentLoaded', async () => {
+    await loadCurrencySettings();
+    await loadEmployees();
+    
+    // Check user role if logged in
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+        isAdminOrManager = await checkUserRole(currentUser.uid);
+    }
+});
+
+        let currentCurrency = '৳';
+        let currentCurrencyCode = 'BDT';
+
+        // Add the currency loading function
+        async function loadCurrencySettings() {
+            try {
+                const storeSnapshot = await getDocs(collection(db, 'storeInfo'));
+                if (!storeSnapshot.empty) {
+                    const storeData = storeSnapshot.docs[0].data();
+                    currentCurrency = storeData.currencySymbol || '৳';
+                    currentCurrencyCode = storeData.currency || 'BDT';
+                }
+            } catch (error) {
+                console.error('Error loading currency settings:', error);
+            }
+        }
+
+        // Add the format currency function
+        function formatCurrency(amount) {
+            return `${amount.toFixed(2)}${currentCurrency}`;
+        }
+
+        function populateYearSelect() {
+    const yearSelect = document.getElementById('yearSelect');
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) {
+            option.selected = true;
+        }
+        yearSelect.appendChild(option);
+    }
+}
+// Set current month in month selector
+function setCurrentMonth() {
+    const currentMonth = new Date().getMonth();
+    document.getElementById('monthSelect').value = currentMonth;
+}
+        // Load employees into select dropdown
+        async function loadEmployees() {
+        const select = document.getElementById('employeeSelect');
+        const querySnapshot = await getDocs(collection(db, 'employees'));
+        
+        // Clear existing options except the first one
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+        
+        querySnapshot.forEach((doc) => {
+            const employee = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = `${employee.name} (${employee.id})`;
+            select.appendChild(option);
+        });
+
+        // Initialize Select2 after loading employees
+        $(select).select2({
+            placeholder: 'Search for an employee...',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Reattach change event handler
+        $(select).on('select2:select', async function(e) {
+            const selectedValue = e.target.value;
+            if (selectedValue) {
+                const month = document.getElementById('monthSelect').value;
+                const year = document.getElementById('yearSelect').value;
+                await calculateAttendanceStats(selectedValue);
+                await updateEmployeeInfo(selectedValue, month, year);
+                await loadSalaryHistory(selectedValue, month, year);
+            }
+        });
+    }
+
+        // Calculate working hours
+        // Update calculateWorkingHours function
+        function calculateWorkingHours(attendance, leaves = []) {
+            if (!attendance) return 0;
+            
+            let totalHours = 0;
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            // Calculate hours from attendance
+            Object.entries(attendance).forEach(([date, day]) => {
+                const attendanceDate = new Date(date);
+                if (attendanceDate.getMonth() === currentMonth && 
+                    attendanceDate.getFullYear() === currentYear &&
+                    day.checkIn && day.checkOut) {
+                    const checkIn = new Date(day.checkIn);
+                    const checkOut = new Date(day.checkOut);
+                    totalHours += (checkOut - checkIn) / (1000 * 60 * 60);
+                }
+            });
+            
+            // Add hours from approved leaves for current month only
+            const currentMonthLeaves = leaves.filter(leave => {
+                const leaveStart = new Date(leave.start);
+                return leaveStart.getMonth() === currentMonth && 
+                       leaveStart.getFullYear() === currentYear &&
+                       leave.status === 'approved';
+            });
+        currentMonthLeaves.forEach(leave => {
+            const startDate = new Date(leave.start);
+            const endDate = new Date(leave.end);
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                    totalHours += 8; // Add 8 hours for each weekday
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        });
+        
+        return Math.round(totalHours * 100) / 100;
+        }
+        
+        // Update calculateAttendanceStats function
+        async function calculateAttendanceStats(employeeId) {
+    const docRef = doc(db, 'employees', employeeId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+        const employee = docSnap.data();
+        const attendance = employee.attendance || {};
+        const leaves = employee.leaves || [];
+        
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        // Calculate total leave days from approved leaves
+        let totalLeaveDays = 0;
+        leaves.filter(leave => {
+            const leaveStart = new Date(leave.start);
+            return leaveStart.getMonth() === currentMonth && 
+                   leaveStart.getFullYear() === currentYear;
+        }).forEach(leave => {
+            const startDate = new Date(leave.start);
+            const endDate = new Date(leave.end);
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                // Only count weekdays
+                if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                    totalLeaveDays++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        });
+
+        // Calculate attendance and performance
+        const daysPresent = Object.keys(attendance).filter(date => {
+            const attendanceDate = new Date(date);
+            return attendanceDate.getMonth() === currentMonth && 
+                   attendanceDate.getFullYear() === currentYear;
+        }).length;
+
+        // Calculate total working days in current month
+        const workingDays = getWorkingDaysInMonth(currentMonth, currentYear);
+        
+        // Calculate performance score based on attendance and approved leaves
+        const performanceScore = Math.min(Math.round(((daysPresent + totalLeaveDays) / workingDays) * 100), 100);
+        
+        // Update the UI
+        document.getElementById('workingHours').textContent = `${calculateWorkingHours(attendance, leaves).toFixed(1)} hrs`;
+        document.getElementById('leaveDays').textContent = `${totalLeaveDays} days`;
+        document.getElementById('performanceScore').textContent = `${performanceScore}%`;
+    }
+}
+        // Add helper function to calculate working days in current month
+        function getWorkingDaysInMonth(month, year) {
+    if (!month || !year) {
+        return 0;
+    }
+    
+    const lastDay = new Date(year, parseInt(month) + 1, 0).getDate();
+    let workingDays = 0;
+
+    for (let day = 1; day <= lastDay; day++) {
+        const date = new Date(year, month, day);
+        if (date.getDay() !== 6 && date.getDay() !== 0) {
+            workingDays++;
+        }
+    }
+    return workingDays || 1; // Ensure we never return 0
+}
+// Add event listeners for month and year selection
+document.getElementById('monthSelect').addEventListener('change', async () => {
+    const employeeId = document.getElementById('employeeSelect').value;
+    const month = document.getElementById('monthSelect').value;
+    const year = document.getElementById('yearSelect').value;
+    if (employeeId && month !== '') {
+        await updateEmployeeInfo(employeeId, month, year);
+        await loadSalaryHistory(employeeId, month, year);
+    }
+});
+
+document.getElementById('yearSelect').addEventListener('change', async () => {
+    const employeeId = document.getElementById('employeeSelect').value;
+    const month = document.getElementById('monthSelect').value;
+    const year = document.getElementById('yearSelect').value;
+    if (employeeId && month !== '') {
+        await updateEmployeeInfo(employeeId, month, year);
+        await loadSalaryHistory(employeeId, month, year);
+    }
+});
+
+        // Update updateEmployeeInfo function - remove duplicate leave hour calculation
+      // Replace the entire updateEmployeeInfo function with this
+async function updateEmployeeInfo(employeeId, month, year) {
+    const docRef = doc(db, 'employees', employeeId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+        const employee = docSnap.data();
+        const attendance = employee.attendance || {};
+        const leaves = employee.leaves || [];
+        
+        // Filter data for selected month
+        const selectedMonthAttendance = Object.entries(attendance).filter(([date]) => {
+            const attendanceDate = new Date(date);
+            return attendanceDate.getMonth() === parseInt(month) && 
+                   attendanceDate.getFullYear() === parseInt(year);
+        });
+
+        const selectedMonthLeaves = leaves.filter(leave => {
+            const leaveDate = new Date(leave.start);
+            return leaveDate.getMonth() === parseInt(month) && 
+                   leaveDate.getFullYear() === parseInt(year);
+        });
+        // Calculate working days for selected month
+        const workingDays = getWorkingDaysInMonth(month, year);
+        const standardMonthlyHours = workingDays * 8; // 8 hours per working day
+        const actualHours = calculateWorkingHours(
+            Object.fromEntries(selectedMonthAttendance),
+            selectedMonthLeaves
+        );
+        // Set base salary and calculate hourly rate
+        const baseSalary = parseFloat(employee.salary) || 0;
+        document.getElementById('baseSalary').value = baseSalary;
+        
+        // Calculate hourly rate based on standard monthly hours
+        const hourlyRate = baseSalary > 0 && standardMonthlyHours > 0 ? 
+            (baseSalary / standardMonthlyHours) : 0;
+        document.getElementById('hourlyRate').value = hourlyRate.toFixed(2);
+        const missingHours = Math.max(0, standardMonthlyHours - actualHours);
+        const missingHoursDeduction = missingHours * hourlyRate;
+         // Calculate automatic deductions from approved advances
+             // Calculate total deductions (advance + missing hours)
+        let totalDeductions = missingHoursDeduction;
+        const advances = employee.advances || [];
+        advances.forEach(advance => {
+            if (advance.status === 'approved' && advance.remainingAmount > 0) {
+                const advanceDate = new Date(advance.approvedAt);
+                const currentDate = new Date(year, month);
+                
+                if (advanceDate <= currentDate) {
+                    totalDeductions += advance.monthlyDeduction;
+                }
+            }
+        });
+        
+
+        // Set calculated deductions
+        document.getElementById('deductions').value = totalDeductions.toFixed(2);
+
+        // Calculate overtime hours
+        const overtimeHours = Math.max(actualHours - standardMonthlyHours, 0);
+        document.getElementById('overtimeHours').value = overtimeHours.toFixed(1);
+        
+        // Update leave history
+        const leaveHistory = document.getElementById('leaveHistory');
+        leaveHistory.innerHTML = '';
+        
+        // Update the leave history display in updateEmployeeInfo function
+        selectedMonthLeaves.forEach(leave => {
+    const leaveEl = document.createElement('div');
+    leaveEl.className = 'leave-item';
+    leaveEl.innerHTML = `
+        <p>${leave.type} Leave</p>
+        <p>${new Date(leave.start).toLocaleDateString()} - ${new Date(leave.end).toLocaleDateString()}</p>
+        <p>Status: ${leave.status || 'Pending'}</p>
+        ${leave.status === 'pending' && isAdminOrManager ? `
+            <div class="leave-actions">
+                <button onclick="updateLeaveStatus('${employeeId}', '${leave.start}', 'approved')" class="btn-success">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+                <button onclick="updateLeaveStatus('${employeeId}', '${leave.start}', 'rejected')" class="btn-danger">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+            </div>
+        ` : ''}
+    `;
+    leaveHistory.appendChild(leaveEl);
+});
+    }
+}
+
+        // Calculate salary calculation
+        // Remove duplicate event listeners and update the employee selection handler
+
+
+document.getElementById('employeeSelect').addEventListener('change', async (e) => {
+    if (e.target.value) {
+        const month = document.getElementById('monthSelect').value;
+        const year = document.getElementById('yearSelect').value;
+        await calculateAttendanceStats(e.target.value);
+        await updateEmployeeInfo(e.target.value, month, year);
+        await loadSalaryHistory(e.target.value, month, year);
+        await loadAdvanceHistory(e.target.value); 
+        const docRef = doc(db, 'employees', e.target.value);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const employee = docSnap.data();
+            // Update base salary immediately
+            document.getElementById('baseSalary').value = employee.salary || 0;
+            
+            // Calculate hourly rate
+            const workingDays = getWorkingDaysInMonth(month, year);
+            const standardMonthlyHours = workingDays * 8;
+            const hourlyRate = (employee.salary || 0) / standardMonthlyHours;
+            document.getElementById('hourlyRate').value = hourlyRate.toFixed(2);
+            
+            // Update other information
+            await calculateAttendanceStats(e.target.value);
+            await updateEmployeeInfo(e.target.value, month, year);
+            await loadSalaryHistory(e.target.value, month, year);
+        }
+    }
+});
+
+
+// Update the calculate salary event listener
+document.getElementById('calculateSalary').addEventListener('click', async () => {
+    const employeeId = document.getElementById('employeeSelect').value;
+    const baseSalary = parseFloat(document.getElementById('baseSalary').value) || 0;
+    const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+    const overtimeHours = parseFloat(document.getElementById('overtimeHours').value) || 0;
+    const bonusPercentage = parseFloat(document.getElementById('bonus').value) || 0;
+    const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+    
+    // Get advance deductions
+    let advanceDeductions = 0;
+    const docRef = doc(db, 'employees', employeeId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        const employee = docSnap.data();
+        const advances = employee.advances || [];
+        advances.forEach(advance => {
+            if (advance.status === 'approved' && advance.remainingAmount > 0) {
+                advanceDeductions += advance.monthlyDeduction || 0;
+            }
+        });
+    }
+    
+    // Calculate components
+    const overtimePay = overtimeHours * (hourlyRate * 1.5);
+    const bonusAmount = (baseSalary * bonusPercentage) / 100;
+    
+    // Calculate total with advance deductions
+    const totalDeductions = deductions + advanceDeductions;
+    const totalSalary = baseSalary + overtimePay + bonusAmount - totalDeductions;
+    
+    // Update display
+    document.getElementById('deductions').value = totalDeductions.toFixed(2);
+    document.getElementById('totalSalary').textContent = formatCurrency(totalSalary);
+    document.getElementById('confirmSalary').disabled = false;
+});
+document.getElementById('confirmSalary').addEventListener('click', async () => {
+    const employeeId = document.getElementById('employeeSelect').value;
+    if (!employeeId) {
+        alert('Please select an employee');
+        return;
+    }
+
+    try {
+        const docRef = doc(db, 'employees', employeeId);
+        const docSnap = await getDoc(docRef);
+        const employee = docSnap.data();
+        
+        // Calculate missing hours deduction
+        const month = parseInt(document.getElementById('monthSelect').value);
+        const year = parseInt(document.getElementById('yearSelect').value);
+        const existingSalary = (employee.salaryRecords || []).find(record => 
+            record.month === month && record.year === year
+        );
+
+        if (existingSalary) {
+            alert(`Salary record already exists for ${new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}`);
+            return;
+        }
+        const workingDays = getWorkingDaysInMonth(month, year);
+        const standardMonthlyHours = workingDays * 8;
+        const actualHours = calculateWorkingHours(
+            employee.attendance || {},
+            employee.leaves || []
+        );
+        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+        const missingHours = Math.max(0, standardMonthlyHours - actualHours);
+        const missingHoursDeduction = missingHours * hourlyRate;
+        
+        // Get advance deductions
+        let advanceDeductions = 0;
+        const advances = employee.advances || [];
+        advances.forEach(advance => {
+            if (advance.status === 'approved' && advance.remainingAmount > 0) {
+                advanceDeductions += advance.monthlyDeduction || 0;
+            }
+        });
+
+        // Rest of your existing code...
+        const baseSalary = parseFloat(document.getElementById('baseSalary').value) || 0;
+        const overtimeHours = parseFloat(document.getElementById('overtimeHours').value) || 0;
+        const bonusPercentage = parseFloat(document.getElementById('bonus').value) || 0;
+        const bonusAmount = (baseSalary * bonusPercentage) / 100;
+        const overtimePay = overtimeHours * (hourlyRate * 1.5);
+        const totalSalary = baseSalary + overtimePay + bonusAmount - (missingHoursDeduction + advanceDeductions);
+
+        // Create new salary record
+        const newSalaryRecord = {
+            date: new Date().toISOString(),
+            baseSalary,
+            overtimeHours,
+            overtimePay,
+            bonusPercentage,
+            bonusAmount,
+            attendanceDeductions: missingHoursDeduction,
+            advanceDeductions: advanceDeductions,
+            totalSalary,
+            month: month, // Use the month variable we defined earlier
+            year: year
+        };
+
+        // Continue with existing code...
+
+        // Update employee document with new salary record
+        await updateDoc(docRef, { 
+            salaryRecords: [...(employee.salaryRecords || []), newSalaryRecord]
+        });
+        
+        document.getElementById('confirmSalary').disabled = true;
+        alert('Salary record saved successfully!');
+        
+        // Refresh salary history display
+        await loadSalaryHistory(employeeId, month, year);
+    } catch (error) {
+        console.error('Error saving salary record:', error);
+        alert('Error saving salary record');
+    }
+});
+
+async function loadSalaryHistory(employeeId, month, year) {
+    const docRef = doc(db, 'employees', employeeId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+        const employee = docSnap.data();
+        const salaryHistory = document.getElementById('salaryHistory');
+        salaryHistory.innerHTML = '';
+        
+        // Add account info at the top of salary history
+        const accountInfo = document.createElement('div');
+        accountInfo.className = 'account-info';
+        accountInfo.innerHTML = `
+            <div class="detail-item">
+                <span class="label"><i class="fas fa-university"></i> Account Number:</span>
+                <span class="value">${employee.accountNumber || 'Not provided'}</span>
+            </div>
+        `;
+        salaryHistory.appendChild(accountInfo);
+        
+        if (employee.salaryRecords) {
+            const filteredRecords = employee.salaryRecords.filter(record => 
+                record.month === parseInt(month) && record.year === parseInt(year)
+            );
+            
+            const sortedRecords = [...filteredRecords].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+            
+            sortedRecords.forEach(record => {
+                const recordEl = document.createElement('div');
+                recordEl.className = 'salary-record';
+                recordEl.innerHTML = `
+        <div class="salary-record-header">
+            <div class="header-left">
+                <h4>${new Date(record.date).toLocaleDateString()}</h4>
+                <span class="month-year">${new Date(record.date).toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+            </div>
+            <div class="header-right">
+                <h4 class="total">${formatCurrency(record.totalSalary)}</h4>
+                <button class="btn-print" onclick="printSalarySlip('${employee.name}', ${JSON.stringify(record).replace(/"/g, '&quot;')})">
+                    <i class="fas fa-print"></i> Print Slip
+                </button>
+            </div>
+        </div>
+    <div class="salary-record-details">
+            <div class="detail-item">
+                <span class="label">Base Salary:</span>
+                <span class="value">${formatCurrency(record.baseSalary)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Overtime (${record.overtimeHours}hrs):</span>
+                <span class="value">${formatCurrency(record.overtimePay)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Bonus (${record.bonusPercentage}%):</span>
+                <span class="value">${formatCurrency(record.bonusAmount)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Attendance Deductions:</span>
+                <span class="value">-${formatCurrency(record.attendanceDeductions || 0)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Advance Deductions:</span>
+                <span class="value">-${formatCurrency(record.advanceDeductions || 0)}</span>
+            </div>
+        </div>
+    `;
+                salaryHistory.appendChild(recordEl);
+            });
+        }
+    }
+}
+
+window.updateLeaveStatus = async function(employeeId, leaveStart, newStatus) {
+    try {
+        // Check if user has permission
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            alert('Please login first');
+            return;
+        }
+
+        const hasPermission = await checkUserRole(currentUser.uid);
+        if (!hasPermission) {
+            alert('You do not have permission to approve/reject leave requests');
+            return;
+        }
+
+        const docRef = doc(db, 'employees', employeeId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const employee = docSnap.data();
+            const leaves = employee.leaves || [];
+            
+            const updatedLeaves = leaves.map(leave => {
+                if (leave.start === leaveStart) {
+                    return { 
+                        ...leave, 
+                        status: newStatus,
+                        approvedBy: currentUser.uid,
+                        approvedAt: new Date().toISOString()
+                    };
+                }
+                return leave;
+            });
+            
+            await updateDoc(docRef, { leaves: updatedLeaves });
+            
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            await updateEmployeeInfo(employeeId, month, year);
+            await calculateAttendanceStats(employeeId);
+            
+            alert(`Leave request ${newStatus}`);
+        }
+    } catch (error) {
+        console.error('Error updating leave status:', error);
+        alert('Error updating leave status');
+    }
+}
+// Add this after Firebase initialization
+async function checkUserRole(userId) {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        const userData = userSnap.data();
+        return userData.role === 'admin' || userData.role === 'manager';
+    }
+    return false;
+}
+window.printSalarySlip = function(employeeName, record) {
+    // Get employee account number
+    const employeeId = document.getElementById('employeeSelect').value;
+    const docRef = doc(db, 'employees', employeeId);
+    
+    getDoc(docRef).then((docSnap) => {
+        if (docSnap.exists()) {
+            const employee = docSnap.data();
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Salary Slip - ${employeeName}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .salary-slip { max-width: 800px; margin: 0 auto; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .company-name { font-size: 24px; margin-bottom: 10px; }
+                        .slip-title { font-size: 20px; margin-bottom: 20px; }
+                        .employee-info { margin-bottom: 30px; }
+                        .salary-details { width: 100%; border-collapse: collapse; }
+                        .salary-details th, .salary-details td {
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            text-align: left;
+                        }
+                        .total-row { font-weight: bold; background-color: #f5f5f5; }
+                        .footer { margin-top: 50px; text-align: center; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="salary-slip">
+                        <div class="header">
+                            <div class="company-name">Your Company Name</div>
+                            <div class="slip-title">Salary Slip</div>
+                        </div>
+                        <div class="employee-info">
+                            <p><strong>Employee Name:</strong> ${employeeName}</p>
+                            <p><strong>Account Number:</strong> ${employee.accountNumber || 'Not provided'}</p>
+                            <p><strong>Pay Period:</strong> ${new Date(record.date).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+                            <p><strong>Date Issued:</strong> ${new Date(record.date).toLocaleDateString()}</p>
+                        </div>
+                      <table class="salary-details">
+    <tr>
+        <th>Description</th>
+        <th>Amount</th>
+    </tr>
+    <tr>
+        <td>Base Salary</td>
+        <td>${formatCurrency(record.baseSalary)}</td>
+    </tr>
+    <tr>
+        <td>Overtime (${record.overtimeHours} hours)</td>
+        <td>${formatCurrency(record.overtimePay)}</td>
+    </tr>
+    <tr>
+        <td>Bonus (${record.bonusPercentage}%)</td>
+        <td>${formatCurrency(record.bonusAmount)}</td>
+    </tr>
+    <tr>
+        <td>Attendance Deductions</td>
+        <td>-${formatCurrency(record.attendanceDeductions || 0)}</td>
+    </tr>
+    <tr>
+        <td>Advance Deductions</td>
+        <td>-${formatCurrency(record.advanceDeductions || 0)}</td>
+    </tr>
+    <tr class="total-row">
+        <td>Total Salary</td>
+        <td>${formatCurrency(record.totalSalary)}</td>
+    </tr>
+</table>
+                        <div class="footer" style="margin-top: 50px;">
+                            <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                                <div style="flex: 1; text-align: center; padding: 20px;">
+                                    <div style="border-top: 1px solid #000; margin-top: 40px; width: 200px; display: inline-block;">
+                                        Employee Signature
+                                    </div>
+                                </div>
+                                <div style="flex: 1; text-align: center; padding: 20px;">
+                                    <div style="border-top: 1px solid #000; margin-top: 40px; width: 200px; display: inline-block;">
+                                        Authorized Signature
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="margin-top: 20px; color: #666; font-size: 12px;">This document requires both employee and authorized signatures for validation.</p>
+                        </div>
+                        <div class="no-print">
+                            <button onclick="window.print()">Print</button>
+                            <button onclick="window.close()">Close</button>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    });
+   }   // Add tab switching functionality
+// Update the tab switching event listener to include advance history loading
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', async () => {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        button.classList.add('active');
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+        
+        // Load advance history when switching to advance tab
+        if (tabId === 'advance') {
+            const employeeId = document.getElementById('employeeSelect').value;
+            if (employeeId) {
+                await loadAdvanceHistory(employeeId);
+            }
+        }
+    });
+});
+document.getElementById('employeeSelect').addEventListener('change', async (e) => {
+    if (e.target.value) {
+        const month = document.getElementById('monthSelect').value;
+        const year = document.getElementById('yearSelect').value;
+        await calculateAttendanceStats(e.target.value);
+        await updateEmployeeInfo(e.target.value, month, year);
+        await loadSalaryHistory(e.target.value, month, year);
+    }
+});
+
+// Initialize month selector
+populateYearSelect();
+setCurrentMonth();
+        // Submit leave request
+        // Update the submit leave event listener
+        document.getElementById('submitLeave').addEventListener('click', async () => {
+            const employeeId = document.getElementById('employeeSelect').value;
+            if (!employeeId) {
+                alert('Please select an employee');
+                return;
+            }
+            const leaveType = document.getElementById('leaveType').value;
+            const startDate = document.getElementById('leaveStart').value;
+            const endDate = document.getElementById('leaveEnd').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'employees', employeeId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const employee = docSnap.data();
+                    const leaves = employee.leaves || [];
+                    
+                    // Check for overlapping dates
+                    const newStartDate = new Date(startDate);
+                    const newEndDate = new Date(endDate);
+                    
+                    const hasOverlap = leaves.some(leave => {
+                        const existingStart = new Date(leave.start);
+                        const existingEnd = new Date(leave.end);
+                        
+                        return (
+                            (newStartDate >= existingStart && newStartDate <= existingEnd) ||
+                            (newEndDate >= existingStart && newEndDate <= existingEnd) ||
+                            (newStartDate <= existingStart && newEndDate >= existingEnd)
+                        );
+                    });
+                    
+                    if (hasOverlap) {
+                        alert('Leave request overlaps with existing leave dates. Please select different dates.');
+                        return;
+                    }
+                    
+                    leaves.push({
+                        type: leaveType,
+                        start: startDate,
+                        end: endDate,
+                        status: 'pending',
+                        month: new Date(startDate).getMonth(),
+                        year: new Date(startDate).getFullYear()
+                    });
+                    
+                    await updateDoc(docRef, { leaves: leaves });
+                    alert('Leave request submitted successfully');
+                    updateEmployeeInfo(employeeId);
+                }
+            } catch (error) {
+                console.error('Error submitting leave request:', error);
+                alert('Error submitting leave request');
+            }
+        });
+
+        // Event listener for employee selection
+        document.getElementById('employeeSelect').addEventListener('change', async (e) => {
+            if (e.target.value) {
+                await calculateAttendanceStats(e.target.value);
+                updateEmployeeInfo(e.target.value);
+            }
+        });
+    
+// Add after other event listeners
+document.getElementById('submitAdvance').addEventListener('click', async () => {
+    const employeeId = document.getElementById('employeeSelect').value;
+    if (!employeeId) {
+        alert('Please select an employee');
+        return;
+    }
+
+    const amount = parseFloat(document.getElementById('advanceAmount').value);
+    const reason = document.getElementById('advanceReason').value;
+    const repaymentMonths = parseInt(document.getElementById('repaymentMonths').value);
+
+    if (!amount || !reason || !repaymentMonths) {
+        alert('Please fill all fields');
+        return;
+    }
+
+    try {
+        const docRef = doc(db, 'employees', employeeId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const employee = docSnap.data();
+            const baseSalary = parseFloat(employee.salary) || 0;
+            const maxAdvance = baseSalary * 0.5;
+
+            if (amount > maxAdvance) {
+                alert(`Maximum advance amount allowed is ${formatCurrency(maxAdvance)}`);
+                return;
+            }
+
+            const advances = employee.advances || [];
+            const pendingAdvances = advances.filter(adv => adv.status === 'pending');
+            
+            if (pendingAdvances.length > 0) {
+                alert('You already have a pending advance request');
+                return;
+            }
+
+            advances.push({
+                amount,
+                reason,
+                repaymentMonths,
+                requestDate: new Date().toISOString(),
+                status: 'pending',
+                monthlyDeduction: amount / repaymentMonths,
+                remainingAmount: amount,
+                approvedBy: null,
+                approvedAt: null
+            });
+
+            await updateDoc(docRef, { advances });
+            alert('Advance request submitted successfully');
+            loadAdvanceHistory(employeeId);
+            
+            // Clear form
+            document.getElementById('advanceAmount').value = '';
+            document.getElementById('advanceReason').value = '';
+            document.getElementById('repaymentMonths').value = '1';
+        }
+    } catch (error) {
+        console.error('Error submitting advance request:', error);
+        alert('Error submitting advance request');
+    }
+});
+
+// Add function to load advance history
+async function loadAdvanceHistory(employeeId) {
+    const docRef = doc(db, 'employees', employeeId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+        const employee = docSnap.data();
+        const advanceHistory = document.getElementById('advanceHistory');
+        advanceHistory.innerHTML = '';
+        
+        const advances = employee.advances || [];
+        advances.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+        
+        advances.forEach(advance => {
+            const advanceEl = document.createElement('div');
+            advanceEl.className = 'advance-item';
+            advanceEl.innerHTML = `
+                <div class="advance-header">
+                    <h4>${formatCurrency(advance.amount)}</h4>
+                    <span class="status ${advance.status}">${advance.status}</span>
+                </div>
+                <p><strong>Request Date:</strong> ${new Date(advance.requestDate).toLocaleDateString()}</p>
+                <p><strong>Reason:</strong> ${advance.reason}</p>
+                <p><strong>Repayment:</strong> ${formatCurrency(advance.monthlyDeduction)} x ${advance.repaymentMonths} months</p>
+                <p><strong>Remaining:</strong> ${formatCurrency(advance.remainingAmount)}</p>
+                ${advance.status === 'pending' && isAdminOrManager ? `
+                    <div class="advance-actions">
+                        <button onclick="updateAdvanceStatus('${employeeId}', '${advance.requestDate}', 'approved')" class="btn-success">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button onclick="updateAdvanceStatus('${employeeId}', '${advance.requestDate}', 'rejected')" class="btn-danger">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    </div>
+                ` : ''}
+            `;
+            advanceHistory.appendChild(advanceEl);
+        });
+    }
+}
+
+// Add function to update advance status
+window.updateAdvanceStatus = async function(employeeId, requestDate, newStatus) {
+    try {
+        const currentUser = auth.currentUser;
+        if (!currentUser || !isAdminOrManager) {
+            alert('You do not have permission to approve/reject advance requests');
+            return;
+        }
+
+        const docRef = doc(db, 'employees', employeeId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const employee = docSnap.data();
+            const advances = employee.advances || [];
+            
+            const updatedAdvances = advances.map(advance => {
+                if (advance.requestDate === requestDate) {
+                    return {
+                        ...advance,
+                        status: newStatus,
+                        approvedBy: currentUser.uid,
+                        approvedAt: new Date().toISOString()
+                    };
+                }
+                return advance;
+            });
+            
+            await updateDoc(docRef, { advances: updatedAdvances });
+            await loadAdvanceHistory(employeeId);
+            alert(`Advance request ${newStatus}`);
+        }
+    } catch (error) {
+        console.error('Error updating advance status:', error);
+        alert('Error updating advance status');
+    }
+};
+        // Initial load
+        
+    </script>
+   
+</body>
+</html>
+
+
+

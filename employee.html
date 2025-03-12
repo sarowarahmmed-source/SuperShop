@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="employee.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="pos.html"><i class="fas fa-shopping-cart"></i> Pos</a></li>
+            <li><a href="electronics-pos.html"><i class="fas fa-shopping-cart"></i> E-Pos</a></li>
+            <li><a href="inventory.html"><i class="fas fa-box"></i> Inventory</a></li>
+            <li><a href="vat.html"><i class="fas fa-percent"></i> Tax</a></li>
+            <li><a href="sales.html"><i class="fas fa-store"></i> Sales</a></li>
+            <li><a href="user-sales.html"><i class="fas fa-exclamation-triangle"></i> User-Management</a></li>
+            <li><a href="employee.html" class="active"><i class="fas fa-bars"></i> Employee</a></li>
+            <li><a href="expenses.html"><i class="fas fa-money-bill-wave"></i> Expenses</a></li>
+            <li><a href="customers.html"><i class="fas fa-users"></i> Customer</a></li>
+            <li><a href="ecommerce.html"><i class="fab fa-google-wallet"></i> Ecomerce</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <header class="header">
+            <h1>Employee Management System</h1>
+        </header>
+
+        <div class="container">
+            <div class="filter-container">
+                <div class="left-filters">
+                    <button class="add-btn" onclick="openModal()">Add New Employee</button>
+                </div>
+                <div class="filters">
+                    <button id="bt"><a href="employee-performance.html">Salary</a></button>
+                    
+                    <button class="print-btn" onclick="printEmployees()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <input type="text" id="searchInput" class="filter-select" placeholder="Search by name/ID/position...">
+                    <select id="departmentFilter" class="filter-select">
+                        <option value="">All Departments</option>
+                    </select>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="employeeTable">
+                    <thead id="table-head">
+                        <tr >
+                            <th>SL</th>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Join Date</th>
+                            <th>Check In/Out</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Employee</h2>
+            <form id="addEmployeeForm">
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="employeeImage">Employee Photo</label>
+                        <input type="file" id="employeeImage" accept="image/*">
+                        <div id="imagePreview"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select id="department" required>
+                            <option value="">Select Department</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="position">Position</label>
+                        <input type="text" id="position" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary">Salary</label>
+                        <input type="number" id="salary" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <!-- Add this inside the form-container div, before the address form-group -->
+                    <div class="form-group">
+                        <label for="accountNumber">Account Number</label>
+                        <input type="text" id="accountNumber" required>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="address">Address</label>
+                        <textarea id="address" rows="3"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <div class="modal-buttons">
+                            <button type="button" onclick="closeModal()">Cancel</button>
+                            <button type="submit" class="add-btn">Add Employee</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, getDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Generate random ID
+        function generateId() {
+            return 'EMP-' + Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Load departments
+        async function loadDepartments() {
+            const departmentFilter = document.getElementById('departmentFilter');
+            const departmentSelect = document.getElementById('department');
+            
+            // Reset the dropdowns with default options
+            departmentFilter.innerHTML = '<option value="">All Departments</option>';
+            departmentSelect.innerHTML = '<option value="">Select Department</option>';
+            
+            try {
+                // Add some default departments if none exist
+                const defaultDepartments = [
+                    'IT',
+                    'HR',
+                    'Finance',
+                    'Marketing',
+                    'Sales',
+                    'Operations'
+                ];
+
+                // First, try to get departments from Firestore
+                const querySnapshot = await getDocs(collection(db, 'departments'));
+                let departments = querySnapshot.docs.map(doc => doc.data().name).filter(Boolean);
+
+                // If no departments in Firestore, add default ones
+                if (departments.length === 0) {
+                    for (const dept of defaultDepartments) {
+                        await addDoc(collection(db, 'departments'), { name: dept });
+                    }
+                    departments = defaultDepartments;
+                }
+
+                // Sort departments alphabetically
+                departments.sort();
+                
+                // Add departments to both dropdowns
+                departments.forEach(dept => {
+                    departmentFilter.innerHTML += `<option value="${dept}">${dept}</option>`;
+                    departmentSelect.innerHTML += `<option value="${dept}">${dept}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading departments:', error);
+                alert('Error loading departments. Please refresh the page.');
+            }
+        }// Employee details modal functions
+        window.closeDetailsModal = () => {
+            document.getElementById('employeeDetailsModal').style.display = 'none';
+        };
+
+        window.showEmployeeDetails = async (docId) => {
+            const docRef = doc(db, 'employees', docId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const employee = docSnap.data();
+                const today = new Date().toDateString();
+                
+                // Update modal content
+                document.getElementById('detailsName').textContent = employee.name;
+                document.getElementById('detailsPosition').textContent = employee.position;
+                document.getElementById('detailsEmployeeId').textContent = employee.id;
+                document.getElementById('detailsDepartment').textContent = employee.department;
+                document.getElementById('detailsEmail').textContent = employee.email;
+                document.getElementById('detailsPhone').textContent = employee.phone;
+                document.getElementById('detailsSalary').textContent = `${employee.salary.toLocaleString()}৳`;
+                document.getElementById('detailsStatus').textContent = employee.status;
+                document.getElementById('detailsJoinDate').textContent = new Date(employee.joinDate).toLocaleDateString();
+                document.getElementById('detailsAddress').textContent = employee.address || 'Not provided';
+                document.getElementById('detailsAccountNumber').textContent = employee.accountNumber || 'Not provided';
+                const imageContainer = document.getElementById('detailsImage');
+                if (employee.imageUrl) {
+                    imageContainer.innerHTML = `<img src="${employee.imageUrl}" alt="${employee.name}">`;
+                } else {
+                    imageContainer.innerHTML = '<i class="fas fa-user"></i>';
+                }
+                
+                // Add attendance status
+                const attendance = employee.attendance && employee.attendance[today];
+                let attendanceText = 'Not checked in';
+                if (attendance) {
+                    if (attendance.checkIn && attendance.checkOut) {
+                        const checkIn = new Date(attendance.checkIn).toLocaleTimeString();
+                        const checkOut = new Date(attendance.checkOut).toLocaleTimeString();
+                        attendanceText = `Checked in: ${checkIn}<br>Checked out: ${checkOut}`;
+                    } else if (attendance.checkIn) {
+                        const checkIn = new Date(attendance.checkIn).toLocaleTimeString();
+                        attendanceText = `Checked in: ${checkIn}<br>Not checked out`;
+                    }
+                }
+                document.getElementById('detailsAttendance').innerHTML = attendanceText;
+                
+                // Show modal
+                document.getElementById('employeeDetailsModal').style.display = 'block';
+            }
+        };
+
+        // Update the row click handler in fetchEmployees function
+        function createEmployeeRow(doc, employee, serialNumber) {
+            const row = document.createElement('tr');
+            const today = new Date().toDateString();
+            const isCheckedIn = employee.attendance && 
+                           employee.attendance[today] && 
+                           employee.attendance[today].checkIn && 
+                           !employee.attendance[today].checkOut;
+        
+            row.innerHTML = `
+                <td>${serialNumber}</td>
+                <td>${employee.id}</td>
+                <td>${employee.imageUrl ? 
+                    `<img src="${employee.imageUrl}" alt="${employee.name}" class="employee-image">` : 
+                    '<i class="fas fa-user"></i>'}
+                </td>
+                <td>${employee.name}</td>
+                <td>${employee.department}</td>
+                <td>${employee.position}</td>
+                <td>${employee.email}</td>
+                <td>${employee.phone}</td>
+                <td class="status-${employee.status}">${employee.status}</td>
+                <td>${employee.joinDate ? new Date(employee.joinDate).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                    ${isCheckedIn ? 
+                        `<button class="checkout-btn" onclick="event.stopPropagation(); handleCheckOut('${doc.id}')">
+                            <i class="fas fa-sign-out-alt"></i> Check Out
+                        </button>` :
+                        `<button class="checkin-btn" onclick="event.stopPropagation(); handleCheckIn('${doc.id}')">
+                            <i class="fas fa-sign-in-alt"></i> Check In
+                        </button>`
+                    }
+                </td>
+                <td>
+                    <button class="edit-btn" onclick="event.stopPropagation(); editEmployee('${doc.id}')">Edit</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteEmployee('${doc.id}')">Delete</button>
+                </td>
+            `;
+            row.addEventListener('click', () => showEmployeeDetails(doc.id));
+            return row;
+        }
+    // Image preview
+    document.getElementById('employeeImage').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px;">`;
+        }
+        
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Fetch and display employees
+    async function fetchEmployees() {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';
+        
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+        const departmentFilter = document.getElementById('departmentFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, 'employees'));
+            let serialNumber = 1;
+            // In the fetchEmployees function, replace the row creation with:
+        querySnapshot.forEach((doc) => {
+            const employee = doc.data();
+            
+            // Apply filters
+            if (searchQuery && !employee.name.toLowerCase().includes(searchQuery) && 
+                !employee.id.toLowerCase().includes(searchQuery) &&
+                !employee.position.toLowerCase().includes(searchQuery)) return;
+            if (departmentFilter && employee.department !== departmentFilter) return;
+            if (statusFilter && employee.status !== statusFilter) return;
+            
+            const row = createEmployeeRow(doc, employee, serialNumber);
+            tableBody.appendChild(row);
+            serialNumber++;
+        });
+        } catch (error) {
+            console.error('Error fetching employees:', error);
+        }
+    }
+
+    // Event listeners for filters
+    document.getElementById('searchInput').addEventListener('input', fetchEmployees);
+    document.getElementById('departmentFilter').addEventListener('change', fetchEmployees);
+    document.getElementById('statusFilter').addEventListener('change', fetchEmployees);
+    
+
+
+
+    
+    // Modal functions
+    let currentDocId = null;
+
+    window.openModal = () => {
+        document.getElementById('addEmployeeModal').style.display = 'block';
+    };
+
+    window.closeModal = () => {
+        document.getElementById('addEmployeeModal').style.display = 'none';
+        document.getElementById('addEmployeeForm').reset();
+        document.getElementById('imagePreview').innerHTML = '';
+        currentDocId = null;
+        const submitBtn = document.querySelector('#addEmployeeForm button[type="submit"]');
+        submitBtn.textContent = 'Add Employee';
+    };
+
+    // Edit employee
+    window.editEmployee = async (docId) => {
+        currentDocId = docId;
+        const docRef = doc(db, 'employees', docId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const employee = docSnap.data();
+            document.getElementById('name').value = employee.name;
+            document.getElementById('department').value = employee.department;
+            document.getElementById('position').value = employee.position;
+            document.getElementById('email').value = employee.email;
+            document.getElementById('phone').value = employee.phone;
+            document.getElementById('salary').value = employee.salary;
+            document.getElementById('status').value = employee.status;
+            document.getElementById('address').value = employee.address || '';
+            document.getElementById('accountNumber').value = employee.accountNumber || '';
+            if (employee.imageUrl) {
+                document.getElementById('imagePreview').innerHTML = 
+                    `<img src="${employee.imageUrl}" style="max-width: 200px;">`;
+            }
+            
+            const submitBtn = document.querySelector('#addEmployeeForm button[type="submit"]');
+            submitBtn.textContent = 'Update Employee';
+            openModal();
+        }
+    };
+
+    // Delete employee
+         // Delete employee
+         window.deleteEmployee = async function(id) {
+        if (!confirm('Are you sure you want to delete this employee?')) return;
+        
+        try {
+            const docRef = doc(db, 'employees', id);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const employee = docSnap.data();
+                if (employee.imageUrl) {
+                    try {
+                        // Extract public_id from Cloudinary URL
+                        const match = employee.imageUrl.match(/\/v\d+\/([^/]+)\./);
+                        if (match && match[1]) {
+                            const publicId = match[1];
+                            
+                            const timestamp = Math.round(new Date().getTime() / 1000);
+                            const apiSecret = 'CIP69qSf5hfgkKRfmmEbbMp48C0';
+                            const apiKey = '481536226327482';
+                            
+                            const signatureStr = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+                            const signature = await generateSignature(signatureStr);
+                            
+                            const response = await fetch('https://api.cloudinary.com/v1_1/dqsrrhxms/image/destroy', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    public_id: publicId,
+                                    api_key: apiKey,
+                                    timestamp: timestamp,
+                                    signature: signature
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error('Failed to delete image from Cloudinary');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error deleting image:', error);
+                    }
+                }
+                
+                // Delete employee document
+                await deleteDoc(docRef);
+                fetchEmployees();
+                alert('Employee deleted successfully');
+            }
+        } catch (error) {
+            console.error('Error deleting employee:', error);
+            alert('Error deleting employee. Please try again.');
+        }
+    };       
+async function generateSignature(string) {
+        const msgBuffer = new TextEncoder().encode(string);
+        const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+// Form submit handler
+document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const department = document.getElementById('department').value.trim();
+    const position = document.getElementById('position').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const salary = document.getElementById('salary').value;
+    const status = document.getElementById('status').value;
+
+    if (!name || !department || !position || !email || !phone || !salary || !status) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    const imageFile = document.getElementById('employeeImage').files[0];
+    
+    try {
+        let imageUrl = '';
+        let employeeId = '';
+        
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('file', imageFile);
+            formData.append('upload_preset', 'sarowar');
+            
+            const response = await fetch(
+                'https://api.cloudinary.com/v1_1/dqsrrhxms/image/upload',
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+            
+            const data = await response.json();
+            imageUrl = data.secure_url;
+        }
+
+        // Get existing employee data if editing
+        if (currentDocId) {
+            const docRef = doc(db, 'employees', currentDocId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                imageUrl = imageUrl || docSnap.data().imageUrl || '';
+                employeeId = docSnap.data().id;
+            }
+        }
+
+        // In the form submit handler, update the employeeData object
+        const employeeData = {
+            id: employeeId || generateId(),
+            name: name,
+            department: department,
+            position: position,
+            email: email,
+            phone: phone,
+            salary: parseFloat(salary),
+            status: status,
+            address: document.getElementById('address').value,
+            accountNumber: document.getElementById('accountNumber').value, // Add this line
+            imageUrl: imageUrl,
+            joinDate: new Date().toISOString()
+        };
+        
+        if (currentDocId) {
+            await updateDoc(doc(db, 'employees', currentDocId), employeeData);
+        } else {
+            await addDoc(collection(db, 'employees'), employeeData);
+        }
+        
+        closeModal();
+        fetchEmployees();
+        alert('Employee saved successfully!');
+    } catch (error) {
+        console.error('Error saving employee:', error);
+        alert('Error saving employee. Please try again.');
+    }
+});
+        // Check-in/out handlers
+        window.handleCheckIn = async (docId) => {
+            try {
+                const docRef = doc(db, 'employees', docId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const today = new Date().toDateString();
+                    const now = new Date();
+                    
+                    const attendance = docSnap.data().attendance || {};
+                    attendance[today] = {
+                        checkIn: now.toISOString(),
+                        checkOut: null
+                    };
+                    
+                    await updateDoc(docRef, { attendance: attendance });
+                    fetchEmployees();
+                    alert('Check-in successful!');
+                }
+            } catch (error) {
+                console.error('Error checking in:', error);
+                alert('Error checking in. Please try again.');
+            }
+        };
+
+        window.handleCheckOut = async (docId) => {
+            try {
+                const docRef = doc(db, 'employees', docId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const today = new Date().toDateString();
+                    const now = new Date();
+                    
+                    const attendance = docSnap.data().attendance || {};
+                    if (attendance[today] && attendance[today].checkIn) {
+                        attendance[today].checkOut = now.toISOString();
+                        
+                        await updateDoc(docRef, { attendance: attendance });
+                        fetchEmployees();
+                        alert('Check-out successful!');
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking out:', error);
+                alert('Error checking out. Please try again.');
+            }
+        };
+
+      
+
+// Initial load
+loadDepartments();
+fetchEmployees();
+
+window.printEmployees = function() {
+    const printWindow = window.open('', '_blank');
+    const tableBody = document.getElementById('tableBody').cloneNode(true);
+    const tableHead = document.getElementById('table-head').cloneNode(true);
+    
+    // Remove action columns from the header
+    tableHead.querySelector('tr').lastElementChild.remove(); // Remove Actions column
+    tableHead.querySelector('tr').lastElementChild.remove(); // Remove Check In/Out column
+    
+    // Remove action columns from each row
+    tableBody.querySelectorAll('tr').forEach(row => {
+        row.lastElementChild.remove(); // Remove Actions column
+        row.lastElementChild.remove(); // Remove Check In/Out column
+    });
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Employee List</title>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f4f4f4; }
+                .header { text-align: center; margin-bottom: 20px; }
+                .print-date { text-align: right; margin-bottom: 10px; }
+                @media print {
+                    .employee-image { max-width: 50px; max-height: 50px; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Employee List</h1>
+            </div>
+            <div class="print-date">
+                Date: ${new Date().toLocaleDateString()}
+            </div>
+            <table>
+                ${tableHead.outerHTML}
+                ${tableBody.outerHTML}
+            </table>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+};
+</script>
+</body>
+<!-- Employee Details Modal -->
+    <div id="employeeDetailsModal" class="modal">
+        <div class="modal-content details-modal">
+            <div class="employee-details-header">
+                <div class="employee-image-large" id="detailsImage">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="employee-basic-info">
+                    <h2 id="detailsName"></h2>
+                    <p id="detailsPosition"></p>
+                    <span class="employee-id" id="detailsEmployeeId"></span>
+                </div>
+                <button class="close-btn" onclick="closeDetailsModal()">×</button>
+            </div>
+            <div class="employee-details-content">
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-building"></i>
+                        <div class="detail-info">
+                            <label>Department</label>
+                            <p id="detailsDepartment"></p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-envelope"></i>
+                        <div class="detail-info">
+                            <label>Email</label>
+                            <p id="detailsEmail"></p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-phone"></i>
+                        <div class="detail-info">
+                            <label>Phone</label>
+                            <p id="detailsPhone"></p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <div class="detail-info">
+                            <label>Salary</label>
+                            <p id="detailsSalary"></p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="detail-info">
+                            <label>Join Date</label>
+                            <p id="detailsJoinDate"></p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="detail-info">
+                            <label>Status</label>
+                            <p id="detailsStatus"></p>
+                        </div>
+                    </div>
+                    <div class="detail-item full-width">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="detail-info">
+                            <label>Address</label>
+                            <p id="detailsAddress"></p>
+                        </div>
+                    </div>
+                <div class="detail-item">
+                    <i class="fas fa-university"></i>
+                    <div class="detail-info">
+                        <label>Account Number</label>
+                        <p id="detailsAccountNumber"></p>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="detail-info">
+                        <label>Today's Attendance</label>
+                        <p id="detailsAttendance">Not checked in</p>
+                    </div>
+                </div>
+                </div>
+                <!-- Add this inside the details-grid div in the employee details modal -->
+               
+               
+            </div>
+        </div>
+    </div>
+</html>
