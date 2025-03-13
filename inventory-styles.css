@@ -3,7 +3,7 @@
     position: relative;
     width: 100%;
 }
-.container{
+#container{
     margin-left: 250px;
 }
 .special-code-search {
