@@ -3,8 +3,9 @@
     position: relative;
     width: 100%;
 }
-.container{
+#container{
     margin-left: 250px;
+    max-width: 100%;
 }
 .special-code-search {
     width: 100%;
