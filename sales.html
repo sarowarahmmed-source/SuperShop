@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales List</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sales-container {
+            padding: 20px;
+            margin-left: 250px;
+        }
+        .sales-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            
+        }
+        .sale-details-container {
+    font-family: Arial, sans-serif;
+}
+
+.sale-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.sale-info, .payment-info {
+    flex: 1;
+}
+
+.customer-section {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.items-table th, .items-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.items-table th {
+    background-color: #f2f2f2;
+}
+
+.sale-summary {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+
+.summary-row.total {
+    font-weight: bold;
+    font-size: 1.1em;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+.sale-notes {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+        .sales-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .sales-table th, .sales-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .sales-table th {
+            background: #124e66;
+            color: white;
+        }
+        .view-details-btn {
+            padding: 5px 10px;
+            background: #124e66;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white;
+          
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+        .sales-header{
+            margin-left: 250px;
+            padding: 20px;
+            background: linear-gradient(180deg, #124e66 0%, #0d3b4d 100%);
+            color: white;
+        }
+        .sale-type {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .sale-type.electronics {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .sale-type.regular {
+            background-color: #2196F3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>IMS</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="pos.html"><i class="fas fa-shopping-cart"></i> Pos</a></li>
+            <li><a href="electronics-pos.html"><i class="fas fa-shopping-cart"></i> E-Pos</a></li>
+            <li><a href="inventory.html"><i class="fas fa-box"></i> Inventory</a></li>
+            <li><a href="vat.html"><i class="fas fa-percent"></i> Tax</a></li>
+            <li><a href="sales.html" class="active"><i class="fas fa-store"></i> Sales</a></li>
+            <li><a href="user-sales.html"><i class="fas fa-exclamation-triangle"></i> User-Management</a></li>
+            <li><a href="employee.html"><i class="fas fa-bars"></i> Employee</a></li>
+            <li><a href="expenses.html"><i class="fas fa-money-bill-wave"></i> Expenses</a></li>
+            <li><a href="customers.html"><i class="fas fa-users"></i> Customer</a></li>
+            <li><a href="ecommerce.html"><i class="fab fa-google-wallet"></i> Ecomerce</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+    </div>
+    <div class="sales-header">
+        <h1>Sales List</h1>
+        
+        <div class="sales-filters">
+            <input type="date" id="dateFilter" class="filter-select">
+            <input type="text" id="searchInput" placeholder="Search by ID..." class="filter-select">
+            <select id="saleTypeFilter" class="filter-select">
+                <option value="all">All Sales</option>
+                <option value="regular">Regular Sales</option>
+                <option value="electronics">Electronics Sales</option>
+            </select>
+            <button onclick="printSalesList()" class="view-details-btn">
+                <i class="fas fa-print"> </i>Print
+            </button>
+        </div>
+    </div>
+
+    <div class="sales-container">
+
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Subtotal</th>
+                    <th>VAT</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="salesTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="saleDetailsModal" class="modal">
+
+        <div class="modal-content">
+
+    <div id="saleDetails"></div>
+    <button onclick="closeModal()" class="view-details-btn">Close</button>
+</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc, updateDoc, addDoc, deleteDoc } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Add these variables at the top of your script section
+        let currentCurrency = '৳';
+        let currentCurrencyCode = 'BDT';
+
+        // Add the currency loading function
+        async function loadCurrencySettings() {
+            try {
+                const storeSnapshot = await getDocs(collection(db, 'storeInfo'));
+                if (!storeSnapshot.empty) {
+                    const storeData = storeSnapshot.docs[0].data();
+                    currentCurrency = storeData.currencySymbol || '৳';
+                    currentCurrencyCode = storeData.currency || 'BDT';
+                }
+            } catch (error) {
+                console.error('Error loading currency settings:', error);
+            }
+        }
+
+        // Add the format currency function
+        function formatCurrency(amount) {
+            return `${amount.toFixed(2)}${currentCurrency}`;
+        }
+
+        // Update the loadSales function
+                // Update the loadSales function
+                async function loadSales() {
+            await loadCurrencySettings(); // Load currency settings first
+            const salesTable = document.getElementById('salesTableBody');
+            const dateFilter = document.getElementById('dateFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const saleTypeFilter = document.getElementById('saleTypeFilter').value;
+        
+            // Set today's date as default
+            if (!dateFilter) {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('dateFilter').value = today;
+            }
+        
+            try {
+                const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(salesQuery);
+                
+                salesTable.innerHTML = '';
+                
+                for (const doc of querySnapshot.docs) {
+                    const sale = doc.data();
+                    const saleDate = sale.timestamp.split('T')[0];
+                    
+                    // Determine sale type based on sourceSystem and saleType fields
+                    let saleType = sale.saleType || 'regular';
+                    let sourceSystem = sale.sourceSystem || 'pos';
+                    
+                    // Apply filters
+                    if (!dateFilter && saleDate !== new Date().toISOString().split('T')[0]) continue;
+                    if (dateFilter && !sale.timestamp.startsWith(dateFilter)) continue;
+                    if (searchQuery && !sale.saleId.toLowerCase().includes(searchQuery)) continue;
+                    if (saleTypeFilter !== 'all' && saleTypeFilter !== saleType) continue;
+        
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${sale.saleId}</td>
+                        <td>
+                            ${new Date(sale.timestamp).toLocaleString()}
+                            <span class="sale-type ${saleType}">${saleType === 'electronics' ? 'Electronics' : 'Regular'}</span>
+                        </td>
+                        <td>${sale.items.length} items</td>
+                        <td>${formatCurrency(sale.totalAmount)}</td>
+                        <td>${formatCurrency(sale.totalVat)}</td>
+                        <td>${formatCurrency(sale.grandTotal)}</td>
+                        <td>
+                            <button class="view-details-btn" onclick="viewSaleDetails('${doc.id}')">
+                                View Details
+                            </button>
+                            <button class="view-details-btn" style="background: #dc3545;" onclick="deleteSale('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    salesTable.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading sales:', error);
+            }
+        }
+        // Add event listeners
+        document.getElementById('dateFilter').addEventListener('change', loadSales);
+        document.getElementById('searchInput').addEventListener('input', loadSales);
+        document.getElementById('saleTypeFilter').addEventListener('change', loadSales);
+
+        // Make functions globally accessible
+        window.loadSales = loadSales;
+        window.showSaleDetails = async function(saleId) {
+            try {
+                const salesQuery = query(collection(db, 'sales'));
+                const querySnapshot = await getDocs(salesQuery);
+                let saleData;
+                
+                querySnapshot.forEach((doc) => {
+                    if (doc.id === saleId) {
+                        saleData = doc.data();
+                    }
+                });
+        
+                if (saleData) {
+                    // Determine sale type based on customer document
+                    let saleType = 'regular';
+                    if (saleData.customerId) {
+                        try {
+                            const customerDoc = await getDoc(doc(db, 'customers', saleData.customerId));
+                            if (customerDoc.exists() && customerDoc.data().document) {
+                                saleType = 'electronics';
+                            }
+                        } catch (error) {
+                            console.error('Error fetching customer:', error);
+                        }
+                    }
+                    
+                    // Get VAT rules
+                    const vatRulesSnapshot = await getDocs(collection(db, 'vatRules'));
+                    const vatRules = {};
+                    vatRulesSnapshot.forEach(doc => {
+                        const rule = doc.data();
+                        vatRules[rule.specialCode] = rule.vatPercentage;
+                    });
+                    
+                    // Get product details for VAT calculation
+                    const itemsWithVat = await Promise.all(saleData.items.map(async (item) => {
+                        const productDoc = await getDocs(collection(db, 'inventory'));
+                        let specialCode = '';
+                        productDoc.forEach(doc => {
+                            if(doc.id === item.id) {
+                                specialCode = doc.data().specialCode;
+                            }
+                        });
+                        const vatPercentage = vatRules[specialCode] || 0;
+                        const itemTotal = item.price * item.quantity;
+                        const itemVat = itemTotal * (vatPercentage / 100);
+                        return { ...item, vatPercentage, itemVat };
+                    }));
+                    
+                    // Get customer information if available
+                    let customerInfo = "Walk-in Customer";
+                    if (saleData.customerId) {
+                        try {
+                            const customerDoc = await getDoc(doc(db, 'customers', saleData.customerId));
+                            if (customerDoc.exists()) {
+                                const customer = customerDoc.data();
+                                customerInfo = `
+                                    <strong>Name:</strong> ${customer.name || 'N/A'}<br>
+                                    <strong>ID:</strong> ${customer.id || 'N/A'}<br>
+                                    <strong>Phone:</strong> ${customer.phone || 'N/A'}<br>
+                                    <strong>Email:</strong> ${customer.email || 'N/A'}
+                                `;
+                            }
+                        } catch (error) {
+                            console.error('Error fetching customer:', error);
+                        }
+                    }
+                    
+                    const modal = document.getElementById('saleDetailsModal');
+                    const details = document.getElementById('saleDetails');
+                    
+                    // Calculate totals
+                    const subtotal = saleData.totalAmount;
+                    const vatTotal = saleData.totalVat;
+                    const discount = saleData.discount || 0;
+                    const grandTotal = saleData.grandTotal;
+                    
+                    details.innerHTML = `
+                        <div class="sale-details-container">
+                            <div class="sale-header">
+                                <div class="sale-info">
+                                    <p><strong>Sale ID:</strong> ${saleData.saleId}</p>
+                                    <p><strong>Date:</strong> ${new Date(saleData.timestamp).toLocaleString()}</p>
+                                    <p><strong>Cashier:</strong> ${saleData.cashier || 'N/A'}</p>
+                                    <p><strong>Sale Type:</strong> <span class="sale-type ${saleType}">${saleType === 'electronics' ? 'Electronics' : 'Regular'}</span></p>
+                                </div>
+                                <div class="payment-info">
+                                    <p><strong>Payment Method:</strong> ${saleData.paymentMethod || 'Cash'}</p>
+                                    ${saleData.paymentReference ? `<p><strong>Reference:</strong> ${saleData.paymentReference}</p>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="customer-section">
+                                <h3>Customer Information</h3>
+                                <div class="customer-info">
+                                    ${customerInfo}
+                                </div>
+                            </div>
+                            
+                            <h3>Items Purchased</h3>
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Unit Price</th>
+                                        <th>Quantity</th>
+                                        <th>VAT %</th>
+                                        <th>VAT Amount</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsWithVat.map(item => `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${formatCurrency(item.price)}</td>
+                                            <td>${item.quantity}</td>
+                                            <td>${item.vatPercentage}%</td>
+                                            <td>${formatCurrency(item.itemVat)}</td>
+                                            <td>${formatCurrency((item.quantity * item.price) + item.itemVat)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            
+                            <div class="sale-summary">
+                                <div class="summary-row">
+                                    <span>Subtotal:</span>
+                                    <span>${formatCurrency(subtotal)}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>VAT Total:</span>
+                                    <span>${formatCurrency(vatTotal)}</span>
+                                </div>
+                                ${discount > 0 ? `
+                                <div class="summary-row">
+                                    <span>Discount:</span>
+                                    <span>-${formatCurrency(discount)}</span>
+                                </div>
+                                ` : ''}
+                                <div class="summary-row total">
+                                    <span>Grand Total:</span>
+                                    <span>${formatCurrency(grandTotal)}</span>
+                                </div>
+                                ${saleData.amountPaid ? `
+                                <div class="summary-row">
+                                    <span>Amount Paid:</span>
+                                    <span>${formatCurrency(saleData.amountPaid)}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Change:</span>
+                                    <span>${formatCurrency(saleData.amountPaid - grandTotal)}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${saleData.notes ? `
+                            <div class="sale-notes">
+                                <h3>Notes</h3>
+                                <p>${saleData.notes}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    modal.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading sale details:', error);
+            }
+        };
+
+        window.closeModal = function() {
+            document.getElementById('saleDetailsModal').style.display = 'none';
+        };
+        // Add this after the window.closeModal function
+        window.deleteSale = async function(saleId) {
+            if (!confirm('Are you sure you want to delete this sale? This will restore items back to inventory.')) {
+                return;
+            }
+        
+            try {
+                // Get the sale data first
+                const saleDoc = await getDoc(doc(db, 'sales', saleId));
+                if (!saleDoc.exists()) {
+                    alert('Sale not found!');
+                    return;
+                }
+        
+                const saleData = saleDoc.data();
+        
+                // Restore items to inventory
+                for (const item of saleData.items) {
+                    try {
+                        const inventoryRef = doc(db, 'inventory', item.id);
+                        const inventoryDoc = await getDoc(inventoryRef);
+                        
+                        if (inventoryDoc.exists()) {
+                            const currentQuantity = inventoryDoc.data().quantity || 0;
+                            await updateDoc(inventoryRef, {
+                                quantity: currentQuantity + parseInt(item.quantity)
+                            });
+                            console.log(`Restored ${item.quantity} units of ${item.name} to inventory`);
+                        } else {
+                            console.error(`Product ${item.id} not found in inventory`);
+                        }
+                    } catch (error) {
+                        console.error(`Error restoring item ${item.id}:`, error);
+                    }
+                }
+        
+                // Delete the sale record
+                await deleteDoc(doc(db, 'sales', saleId));
+                
+                // Refresh the sales list
+                loadSales();
+                alert('Sale deleted and inventory restored successfully!');
+            } catch (error) {
+                console.error('Error deleting sale:', error);
+                alert('Error deleting sale. Please try again.');
+            }
+        };
+        // Initial load
+        loadSales();
+        // Add this function before the loadSales function
+        window.printSalesList = function() {
+    const date = new Date();
+    const formattedDate = date.toLocaleDateString();
+    const formattedTime = date.toLocaleTimeString();
+    const dateFilter = document.getElementById('dateFilter').value;
+    const searchQuery = document.getElementById('searchInput').value;
+    const saleTypeFilter = document.getElementById('saleTypeFilter').value;
+    
+    // Create a new window for the report
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    // Get store info if available, otherwise use defaults
+    let storeName = 'IMS Store';
+    let storeAddress = '123 Main Street, City';
+    let storePhone = '(123) 456-7890';
+    let storeEmail = 'store@example.com';
+    
+    // Clone the sales table data
+    const salesTable = document.querySelector('.sales-table');
+    const tableClone = salesTable.cloneNode(true);
+    
+    // Remove action buttons column from the cloned table
+    const headerRow = tableClone.querySelector('thead tr');
+    const actionHeader = headerRow.querySelector('th:last-child');
+    if (actionHeader) {
+        headerRow.removeChild(actionHeader);
+    }
+    
+    const rows = tableClone.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const actionCell = row.querySelector('td:last-child');
+        if (actionCell) {
+            row.removeChild(actionCell);
+        }
+    });
+    
+    // Count total sales and calculate sum
+    let totalSales = rows.length;
+    let totalAmount = 0;
+    
+    rows.forEach(row => {
+        const amountCell = row.querySelector('td:nth-child(6)');
+        if (amountCell) {
+            const amount = parseFloat(amountCell.textContent.replace(/[^0-9.-]+/g, ''));
+            if (!isNaN(amount)) {
+                totalAmount += amount;
+            }
+        }
+    });
+    
+    // Create the report HTML
+    const reportHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Sales Report - ${formattedDate}</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 10px;
+                    color: #333;
+                    font-size: 12px;
+                }
+                .report-container {
+                    max-width: 100%;
+                    margin: 0 auto;
+                    border: 1px solid #ddd;
+                    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+                }
+                .report-header {
+                    background-color: #f8f8f8;
+                    padding: 10px;
+                    border-bottom: 1px solid #ddd;
+                    display: flex;
+                    justify-content: space-between;
+                }
+                .company-info {
+                    flex: 1;
+                }
+                .company-info h2 {
+                    margin: 0 0 5px 0;
+                    font-size: 16px;
+                }
+                .company-info p {
+                    margin: 2px 0;
+                    font-size: 11px;
+                }
+                .report-title {
+                    flex: 1;
+                    text-align: right;
+                }
+                .report-title h1 {
+                    color: #2c3e50;
+                    margin: 0;
+                    font-size: 18px;
+                }
+                .report-title p {
+                    margin: 2px 0 0;
+                    color: #7f8c8d;
+                    font-size: 11px;
+                }
+                .report-filters {
+                    background-color: #f1f1f1;
+                    padding: 5px 10px;
+                    border-bottom: 1px solid #ddd;
+                    font-size: 11px;
+                }
+                .report-filters p {
+                    margin: 2px 0;
+                    font-size: 11px;
+                    color: #555;
+                    display: inline-block;
+                    margin-right: 15px;
+                }
+                .report-summary {
+                    display: flex;
+                    padding: 5px 10px;
+                    background-color: #e9f7ef;
+                    border-bottom: 1px solid #ddd;
+                }
+                .summary-box {
+                    flex: 1;
+                    text-align: center;
+                    padding: 5px;
+                    border-right: 1px solid #ddd;
+                }
+                .summary-box:last-child {
+                    border-right: none;
+                }
+                .summary-box h3 {
+                    margin: 0;
+                    font-size: 11px;
+                    color: #555;
+                }
+                .summary-box p {
+                    margin: 3px 0 0;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #2c3e50;
+                }
+                .report-content {
+                    padding: 5px 10px;
+                }
+                              table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 10px; /* Reduced from 11px */
+                    table-layout: fixed;
+                }
+                th, td {
+                    padding: 4px 6px; /* Reduced from 5px 8px */
+                    border-bottom: 1px solid #ddd;
+                    text-align: left;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                th {
+                    background-color: #f2f2f2;
+                    font-weight: bold;
+                    color: #555;
+                    position: sticky;
+                    top: 0;
+                    font-size: 11px;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                tr:hover {
+                    background-color: #f1f1f1;
+                }
+                .report-footer {
+                    text-align: center;
+                    padding: 5px;
+                    font-size: 10px;
+                    color: #7f8c8d;
+                    border-top: 1px solid #ddd;
+                }
+                .sale-type {
+                    display: inline-block;
+                    padding: 1px 4px;
+                    border-radius: 2px;
+                    font-size: 9px;
+                    margin-left: 3px;
+                }
+                .regular {
+                    background-color: #3498db;
+                    color: white;
+                }
+                .electronics {
+                    background-color: #2ecc71;
+                    color: white;
+                }
+                .print-button {
+                    background-color: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    margin: 10px auto;
+                    display: block;
+                }
+                                  @media print {
+                        .print-button {
+                            display: none;
+                        }
+                        body {
+                            padding: 0;
+                            margin: 0;
+                        }
+                        .report-container {
+                            box-shadow: none;
+                            border: none;
+                            width: 100%;
+                        }
+                        @page {
+                            size: portrait;
+                            margin: 0.5cm;
+                        }
+                    }
+            </style>
+        </head>
+        <body>
+            <div class="report-container">
+                <div class="report-header">
+                    <div class="company-info">
+                        <h2>${storeName}</h2>
+                        <p>${storeAddress}</p>
+                        <p>Phone: ${storePhone} | Email: ${storeEmail}</p>
+                    </div>
+                    <div class="report-title">
+                        <h1>Sales Report</h1>
+                        <p>Generated on ${formattedDate} at ${formattedTime}</p>
+                    </div>
+                </div>
+                
+                <div class="report-filters">
+                    <p><strong>Filters:</strong></p>
+                    ${dateFilter ? `<p>Date: ${dateFilter}</p>` : '<p>Date: All</p>'}
+                    ${searchQuery ? `<p>Search: "${searchQuery}"</p>` : ''}
+                    ${saleTypeFilter !== 'all' ? `<p>Type: ${saleTypeFilter.charAt(0).toUpperCase() + saleTypeFilter.slice(1)}</p>` : '<p>Type: All</p>'}
+                </div>
+                
+                <div class="report-summary">
+                    <div class="summary-box">
+                        <h3>TOTAL SALES</h3>
+                        <p>${totalSales}</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>TOTAL REVENUE</h3>
+                        <p>${formatCurrency(totalAmount)}</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>AVERAGE SALE</h3>
+                        <p>${totalSales > 0 ? formatCurrency(totalAmount / totalSales) : formatCurrency(0)}</p>
+                    </div>
+                </div>
+                
+                <div class="report-content">
+                    ${tableClone.outerHTML}
+                </div>
+                
+                <div class="report-footer">
+                    <p>This report contains confidential information and is intended for internal use only.</p>
+                    <p>© ${new Date().getFullYear()} ${storeName}</p>
+                </div>
+            </div>
+            
+            <button class="print-button" onclick="window.print()">Print Report</button>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(reportHTML);
+    printWindow.document.close();
+};
+window.printSaleDetail = function() {
+    const saleDetails = document.getElementById('saleDetails').cloneNode(true);
+    const printContainer = document.createElement('div');
+    printContainer.className = 'print-container';
+    
+    // Get sale data from the modal
+    const saleId = document.querySelector('#saleDetails .sale-info h3').textContent.replace('Sale #', '');
+    const saleDate = document.querySelector('#saleDetails .sale-info p:nth-child(2)').textContent.replace('Date: ', '');
+    const cashier = document.querySelector('#saleDetails .sale-info p:nth-child(3)').textContent.replace('Cashier: ', '');
+    const saleType = document.querySelector('#saleDetails .sale-info p:nth-child(4)').textContent.replace('Type: ', '');
+    
+    // Add receipt style header
+    const header = document.createElement('div');
+    header.className = 'print-header';
+    header.innerHTML = `
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h2 style="margin: 0; font-size: 18px;">IMS Store</h2>
+            <p style="margin: 3px 0; font-size: 12px;">123 Main Street, City</p>
+            <p style="margin: 3px 0; font-size: 12px;">Phone: (123) 456-7890</p>
+            <p style="margin: 3px 0; font-size: 12px;">Email: store@example.com</p>
+            <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+            <h3 style="margin: 5px 0; font-size: 14px;">SALES RECEIPT</h3>
+            <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px;">
+            <div>
+                <p style="margin: 2px 0;"><strong>Receipt #:</strong> ${saleId}</p>
+                <p style="margin: 2px 0;"><strong>Date:</strong> ${saleDate}</p>
+            </div>
+            <div>
+                <p style="margin: 2px 0;"><strong>Cashier:</strong> ${cashier}</p>
+                <p style="margin: 2px 0;"><strong>Type:</strong> ${saleType}</p>
+            </div>
+        </div>
+        <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+    `;
+    
+    // Create a simplified version of the sale details for the receipt
+    const receiptDetails = document.createElement('div');
+    receiptDetails.className = 'receipt-details';
+    
+    // Get customer info if available
+    let customerSection = '';
+    const customerDiv = saleDetails.querySelector('.customer-section');
+    if (customerDiv) {
+        const customerName = customerDiv.querySelector('p:nth-child(2)').textContent;
+        const customerPhone = customerDiv.querySelector('p:nth-child(3)').textContent;
+        
+        customerSection = `
+            <div style="margin-bottom: 10px; font-size: 12px;">
+                <p style="margin: 2px 0;"><strong>Customer:</strong> ${customerName}</p>
+                <p style="margin: 2px 0;">${customerPhone}</p>
+            </div>
+            <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+        `;
+    }
+    
+    receiptDetails.innerHTML = customerSection;
+    
+    // Get items table
+    const itemsTable = document.createElement('div');
+    itemsTable.style.fontSize = '11px';
+    itemsTable.style.marginBottom = '10px';
+    
+    // Create table headers
+    itemsTable.innerHTML = `
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #000; padding-bottom: 5px; font-weight: bold;">
+            <div style="width: 40%;">Item</div>
+            <div style="width: 20%; text-align: center;">Price</div>
+            <div style="width: 15%; text-align: center;">Qty</div>
+            <div style="width: 25%; text-align: right;">Total</div>
+        </div>
+    `;
+    
+    // Get items from the original table
+    const originalTable = saleDetails.querySelector('.items-table');
+    const rows = originalTable.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const name = row.cells[0].textContent;
+        const price = row.cells[1].textContent;
+        const quantity = row.cells[2].textContent;
+        const total = row.cells[4].textContent;
+        
+        const itemRow = document.createElement('div');
+        itemRow.style.display = 'flex';
+        itemRow.style.justifyContent = 'space-between';
+        itemRow.style.padding = '5px 0';
+        itemRow.style.borderBottom = '1px dotted #ccc';
+        
+        itemRow.innerHTML = `
+            <div style="width: 40%; font-size: 11px;">${name}</div>
+            <div style="width: 20%; text-align: center; font-size: 11px;">${price}</div>
+            <div style="width: 15%; text-align: center; font-size: 11px;">${quantity}</div>
+            <div style="width: 25%; text-align: right; font-size: 11px;">${total}</div>
+        `;
+        
+        itemsTable.appendChild(itemRow);
+    });
+    
+    receiptDetails.appendChild(itemsTable);
+    
+    // Get summary information
+    const summaryDiv = saleDetails.querySelector('.sale-summary');
+    const summaryRows = summaryDiv.querySelectorAll('.summary-row');
+    
+    const receiptSummary = document.createElement('div');
+    receiptSummary.style.marginTop = '10px';
+    
+    summaryRows.forEach(row => {
+        const label = row.querySelector('span:first-child').textContent;
+        const value = row.querySelector('span:last-child').textContent;
+        const isTotal = row.classList.contains('total');
+        
+        const summaryRow = document.createElement('div');
+        summaryRow.style.display = 'flex';
+        summaryRow.style.justifyContent = 'space-between';
+        summaryRow.style.margin = '3px 0';
+        
+        if (isTotal) {
+            summaryRow.style.fontWeight = 'bold';
+            summaryRow.style.borderTop = '1px solid #000';
+            summaryRow.style.paddingTop = '5px';
+            summaryRow.style.marginTop = '5px';
+        }
+        
+        summaryRow.innerHTML = `
+            <span style="font-size: 12px;">${label}</span>
+            <span style="font-size: 12px;">${value}</span>
+        `;
+        
+        receiptSummary.appendChild(summaryRow);
+    });
+    
+    receiptDetails.appendChild(receiptSummary);
+    
+    // Get payment information if available
+    const paymentInfo = saleDetails.querySelector('.payment-info');
+    if (paymentInfo) {
+        const paymentMethod = paymentInfo.querySelector('p:first-child').textContent;
+        
+        const paymentSection = document.createElement('div');
+        paymentSection.style.marginTop = '15px';
+        paymentSection.style.paddingTop = '5px';
+        paymentSection.style.borderTop = '1px dashed #000';
+        
+        paymentSection.innerHTML = `
+            <p style="margin: 2px 0; font-size: 12px;">${paymentMethod}</p>
+        `;
+        
+        receiptDetails.appendChild(paymentSection);
+    }
+    
+    printContainer.appendChild(header);
+    printContainer.appendChild(receiptDetails);
+    
+    // Add print styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-container, .print-container * {
+                visibility: visible;
+            }
+            .print-container {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                top: 0;
+                width: 80mm;
+                padding: 5mm;
+                font-family: 'Arial', sans-serif;
+                font-size: 12px;
+            }
+            .print-header {
+                margin-bottom: 10px;
+            }
+            hr {
+                border: none;
+                border-top: 1px dashed #000;
+                margin: 5px 0;
+            }
+            p {
+                margin: 3px 0;
+            }
+            h2, h3 {
+                margin: 5px 0;
+            }
+            .print-footer {
+                text-align: center;
+                margin-top: 15px;
+                border-top: 1px dashed #000;
+                padding-top: 10px;
+                font-size: 11px;
+            }
+        }
+    `;
+    
+    // Add footer
+    const footer = document.createElement('div');
+    footer.className = 'print-footer';
+    footer.innerHTML = `
+        <p style="margin: 2px 0; font-size: 11px;">Thank you for your business!</p>
+        <p style="margin: 2px 0; font-size: 11px;">Generated: ${new Date().toLocaleString()}</p>
+        <div style="margin-top: 10px; font-size: 10px;">
+            <p style="margin: 0;">Return Policy: Items can be returned within 7 days</p>
+            <p style="margin: 0;">with original receipt and packaging.</p>
+        </div>
+        <div style="margin-top: 15px; text-align: center;">
+            <svg id="barcode"></svg>
+        </div>
+    `;
+    
+    printContainer.appendChild(footer);
+    
+    // Append to document
+    document.body.appendChild(style);
+    document.body.appendChild(printContainer);
+    
+    // Print and cleanup
+    window.print();
+    document.body.removeChild(style);
+    document.body.removeChild(printContainer);
+};
+        // Add this function to replace showSaleDetails
+        window.viewSaleDetails = async function(saleId) {
+            try {
+                const saleDoc = await getDoc(doc(db, 'sales', saleId));
+                
+                if (!saleDoc.exists()) {
+                    alert('Sale not found');
+                    return;
+                }
+                
+                const sale = saleDoc.data();
+                console.log("Sale details:", sale); // Debug log
+                
+                const modal = document.getElementById('saleDetailsModal');
+                const saleDetails = document.getElementById('saleDetails');
+                
+                const date = new Date(sale.timestamp);
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                // Determine sale type display
+                const saleType = sale.saleType || 'regular';
+                const sourceSystem = sale.sourceSystem || 'pos';
+                const saleTypeDisplay = saleType === 'electronics' ? 'Electronics' : 'Regular';
+                const sourceSystemDisplay = sourceSystem === 'electronics-pos' ? 'Electronics POS' : 'Regular POS';
+                
+                let customerInfo = '';
+                if (sale.customer && (sale.customer.name || sale.customer.phone)) {
+                    customerInfo = `
+                        <div class="customer-section">
+                            <h3>Customer Information</h3>
+                            <p><strong>Name:</strong> ${sale.customer.name || 'N/A'}</p>
+                            <p><strong>Phone:</strong> ${sale.customer.phone || 'N/A'}</p>
+                            ${sale.customer.email ? `<p><strong>Email:</strong> ${sale.customer.email}</p>` : ''}
+                            ${sale.customer.address ? `<p><strong>Address:</strong> ${sale.customer.address}</p>` : ''}
+                        </div>
+                    `;
+                }
+                
+                // Add print buttons with different options based on sale type
+                const printButtons = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2>Sale Details</h2>
+                        <div>
+                            <button onclick="printSaleDetail()" class="view-details-btn" style="margin-right: 5px;">
+                                <i class="fas fa-print"></i> Print Receipt
+                            </button>
+                            ${saleType === 'electronics' ? `
+                            <button onclick="printElectronicsReceipt('${saleId}')" class="view-details-btn" style="background: #4CAF50;">
+                                <i class="fas fa-print"></i> Print Invoice
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                saleDetails.innerHTML = `
+                    ${printButtons}
+                    <div class="sale-details-container">
+                        <div class="sale-header">
+                            <div class="sale-info">
+                                <h3>Sale #${sale.saleId || 'N/A'}</h3>
+                                <p>Date: ${formattedDate}</p>
+                                <p>Cashier: ${sale.username || 'N/A'}</p>
+                                <p>Type: <span class="sale-type ${saleType}">${saleTypeDisplay}</span></p>
+                                <p>Source: ${sourceSystemDisplay}</p>
+                            </div>
+                        </div>
+                        
+                        ${customerInfo}
+                        
+                        <h3>Items Purchased</h3>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>VAT %</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sale.items.map(item => {
+                                    const itemSubtotal = item.price * item.quantity;
+                                    const vatPercentage = item.vatPercentage || 0;
+                                    return `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${formatCurrency(item.price)}</td>
+                                            <td>${item.quantity}</td>
+                                            <td>${vatPercentage}%</td>
+                                            <td>${formatCurrency(itemSubtotal)}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="sale-summary">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span>${formatCurrency(sale.totalAmount)}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>VAT Total:</span>
+                                <span>${formatCurrency(sale.totalVat)}</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Grand Total:</span>
+                                <span>${formatCurrency(sale.grandTotal)}</span>
+                            </div>
+                            ${sale.payment ? `
+                            <div class="summary-row">
+                                <span>Amount Paid:</span>
+                                <span>${formatCurrency(sale.payment.paid)}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Amount Due:</span>
+                                <span>${formatCurrency(sale.payment.due)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${sale.payment ? `
+                        <div class="payment-info">
+                            <h3>Payment Information</h3>
+                            <p><strong>Method:</strong> ${sale.payment.method || 'Cash'}</p>
+                            ${sale.payment.details ? `
+                                <p><strong>Details:</strong> ${JSON.stringify(sale.payment.details)}</p>
+                            ` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading sale details:', error);
+                alert('Error loading sale details: ' + error.message);
+            }
+        };
+
+        // Add the electronics receipt printing function
+        window.printElectronicsReceipt = async function(saleId) {
+            try {
+                const saleDoc = await getDoc(doc(db, 'sales', saleId));
+                
+                if (!saleDoc.exists()) {
+                    alert('Sale not found');
+                    return;
+                }
+                
+                const sale = saleDoc.data();
+                
+                // Get store info for the receipt header
+                const storeSnapshot = await getDocs(collection(db, 'storeInfo'));
+                const storeInfo = storeSnapshot.docs[0]?.data() || {
+                    name: 'IMS Electronics Store',
+                    address: '123 Main Street, City',
+                    phone: '(123) 456-7890',
+                    email: 'store@example.com',
+                    website: 'www.example.com'
+                };
+                
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                
+                // Create a more formal receipt for electronics with warranty information
+                const receiptHTML = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Warranty Receipt #${sale.saleId}</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                max-width: 800px;
+                                margin: 0 auto;
+                                padding: 20px;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 20px;
+                                border-bottom: 2px solid #000;
+                                padding-bottom: 10px;
+                            }
+                            .customer-info, .items-section, .summary-section, .terms-section {
+                                margin-bottom: 20px;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin: 10px 0;
+                            }
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 8px;
+                                text-align: left;
+                            }
+                            th {
+                                background-color: #f2f2f2;
+                            }
+                            .summary-table {
+                                width: 50%;
+                                margin-left: auto;
+                            }
+                            .summary-table td {
+                                border: none;
+                                padding: 5px;
+                            }
+                            .summary-table tr.total td {
+                                border-top: 1px solid #000;
+                                font-weight: bold;
+                            }
+                            .signature-section {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-top: 50px;
+                            }
+                            .signature-line {
+                                width: 40%;
+                                border-top: 1px solid #000;
+                                padding-top: 5px;
+                                text-align: center;
+                            }
+                            .footer {
+                                margin-top: 30px;
+                                text-align: center;
+                                font-size: 12px;
+                                border-top: 1px solid #000;
+                                padding-top: 10px;
+                            }
+                            @media print {
+                                .no-print {
+                                    display: none;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>${storeInfo.name || 'IMS Electronics Store'}</h2>
+                            <p>${storeInfo.address || '123 Main Street, City'}</p>
+                            <p>Phone: ${storeInfo.phone || '(123) 456-7890'} | Email: ${storeInfo.email || 'store@example.com'}</p>
+                            <p>Website: ${storeInfo.website || 'www.example.com'}</p>
+                            <h3>INVOICE</h3>
+                        </div>
+                        
+                        <div class="customer-info">
+                            <h3>Customer Information</h3>
+                            <p><strong>Name:</strong> ${sale.customer?.name || 'N/A'}</p>
+                            <p><strong>Phone:</strong> ${sale.customer?.phone || 'N/A'}</p>
+                            ${sale.customer?.email ? `<p><strong>Email:</strong> ${sale.customer.email}</p>` : ''}
+                            ${sale.customer?.address ? `<p><strong>Address:</strong> ${sale.customer.address}</p>` : ''}
+                            <p><strong>Invoice #:</strong> ${sale.saleId}</p>
+                            <p><strong>Date:</strong> ${new Date(sale.timestamp).toLocaleDateString()} ${new Date(sale.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        
+                        <div class="items-section">
+                            <h3>Purchased Items with Warranty Information</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Serial/Code</th>
+                                        <th>Warranty</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sale.items.map(item => `
+                                        <tr>
+                                            <td>${item.name}</td>
+                                            <td>${item.specialCode || 'N/A'}</td>
+                                            <td>${item.warranty || 'No Warranty'}</td>
+                                            <td>${item.quantity}</td>
+                                            <td>${formatCurrency(item.price * item.quantity)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="summary-section">
+                            <table class="summary-table">
+                                <tr>
+                                    <td>Subtotal:</td>
+                                    <td>${formatCurrency(sale.totalAmount)}</td>
+                                </tr>
+                                <tr>
+                                    <td>VAT Total:</td>
+                                    <td>${formatCurrency(sale.totalVat)}</td>
+                                </tr>
+                                <tr class="total">
+                                    <td>Grand Total:</td>
+                                    <td>${formatCurrency(sale.grandTotal)}</td>
+                                </tr>
+                                ${sale.payment ? `
+                                <tr>
+                                    <td>Amount Paid:</td>
+                                    <td>${formatCurrency(sale.payment.paid)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Amount Due:</td>
+                                    <td>${formatCurrency(sale.payment.due)}</td>
+                                </tr>
+                                ` : ''}
+                            </table>
+                        </div>
+                        
+                        <div class="terms-section">
+                            <h3>Warranty Terms & Conditions</h3>
+                            <ol>
+                                <li>This warranty receipt must be presented for any warranty claims.</li>
+                                <li>Warranty is valid only for manufacturing defects.</li>
+                                <li>Warranty does not cover damage due to misuse, accidents, or natural disasters.</li>
+                                <li>For warranty service, please contact our customer service department.</li>
+                                <li>Warranty period begins from the date of purchase shown on this receipt.</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="signature-section">
+                            <div class="signature-line">
+                                Customer Signature
+                            </div>
+                            <div class="signature-line">
+                                Authorized Signature
+                            </div>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Thank you for your purchase!</p>
+                            <p>For support: ${storeInfo.phone || '(123) 456-7890'} | ${storeInfo.email || 'store@example.com'}</p>
+                        </div>
+                        
+                        <div class="no-print" style="text-align: center; margin-top: 20px;">
+                            <button onclick="window.print()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                Print Warranty Receipt
+                            </button>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                printWindow.document.write(receiptHTML);
+                printWindow.document.close();
+                
+            } catch (error) {
+                console.error('Error generating electronics receipt:', error);
+                alert('Error generating electronics receipt: ' + error.message);
+            }
+        };
+    </script>
+</body>
+</html>

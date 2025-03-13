@@ -1,0 +1,209 @@
+.vat-container {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    
+}
+
+.vat-records {
+    flex: 1;
+    max-width: calc(100% - 350px);
+    margin-top: 20px;
+    margin-left: 8px;
+}
+.vat-form {
+    position: fixed;
+    right: 2rem;
+    top: 90px;
+    width: 300px;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: calc(100vh - 110px);
+    overflow-y: auto;
+}
+
+/* Update table container for better scroll handling */
+.vat-table-container {
+    overflow-x: auto;
+    margin-right: 320px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .vat-container {
+        flex-direction: column;
+    }
+
+    .vat-records {
+        max-width: 100%;
+    }
+
+    .vat-form {
+        position: relative;
+        right: auto;
+        top: auto;
+        width: 100%;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+
+    .vat-table-container {
+        margin-right: 0;
+    }
+}
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+}
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+.form-group input:focus {
+    border-color: #124e66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(18, 78, 102, 0.1);
+}
+.vat-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+.vat-table th, 
+.vat-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.vat-table th {
+    background: #124e66;
+    color: white;
+    font-weight: 500;
+}
+.vat-table tr:hover {
+    background: #f8f9fa;
+}
+.submit-btn {
+    background: #124e66;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+.submit-btn:hover {
+    background: #0d3b4d;
+}
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+.delete-btn:hover {
+    background: #c82333;
+}
+.vat-records h2,
+.vat-form h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+/* Add these styles at the beginning of the file */
+.main-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* Add these header styles */
+.pos-header {
+    padding: 1rem 2rem;
+    background: linear-gradient(180deg, #124e66 0%, #0d3b4d 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.pos-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pos-header h1::before {
+    content: '\f295';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: #ffffff;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-date {
+    color: #666;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-date i {
+    color: #124e66;
+}
+
+/* Update main content padding to account for header */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding-top: 0;
+}
+
+/* Adjust vat-form top position */
+.vat-form {
+    top: 100px;
+}
+.vat-form {
+    position: fixed;
+    right: 2rem;
+    top: 90px;
+    /* ... rest of the vat-form styles ... */
+}
+
+
+
+

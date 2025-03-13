@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Expenses</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .expense-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .expense-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h3 {
+            color: #124e66;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d6f42;
+        }
+        #expenseDetailBody{
+            max-height: 400px;
+            overflow-y: scroll;
+        }
+        ::-webkit-scrollbar {
+  width: 3px;
+}
+        .date-range {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .expense-category {
+            color: #124e66;
+            font-weight: 500;
+        }
+    </style>
+    <style>
+        /* Add after existing styles */
+        .description-cell {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+    
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+    
+        .detail-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e6eef1;
+        }
+    
+        .detail-body {
+            margin-bottom: 1.5rem;
+        }
+    
+        .detail-row {
+            display: flex;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+    
+        .detail-label {
+            width: 120px;
+            font-weight: 500;
+            color: #124e66;
+        }
+    
+        .detail-value {
+            flex: 1;
+        }
+  
+    
+        .print-btn {
+            background: #1d6f42;
+        }
+    
+        /* Updated expense summary cards */
+        .expense-summary {
+            background: linear-gradient(135deg, #124e66 0%, #1a7499 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+    
+        .summary-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    
+        .summary-card h3 {
+            color: white;
+        }
+    
+        .summary-card .amount {
+            color: white;
+        }
+    header {
+            background: linear-gradient(135deg, #124e66 0%, #1a7499 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+        /* Updated form design */
+        .expense-form {
+            background: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .expense-form h2 {
+            color: #124e66;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #f0f4f7;
+            padding-bottom: 0.8rem;
+        }
+        .delete-bt{
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            height: 43px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .delete-bt:hover{
+            background: #c0392b;
+        }
+        .d {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            position: relative;
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #124e66;
+            font-weight: 500;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e7ee;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            border-color: #1a7499;
+            box-shadow: 0 0 0 3px rgba(26, 116, 153, 0.1);
+            outline: none;
+        }
+        
+        .form-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        
+        .add-btn {
+            background: linear-gradient(135deg, #124e66 0%, #1a7499 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(18, 78, 102, 0.2);
+            margin-top: 1.5rem;
+        }
+        
+        .add-btn:hover {
+            background: linear-gradient(135deg, #1a7499 0%, #124e66 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(18, 78, 102, 0.25);
+        }
+        
+        .add-btn:active {
+            transform: translateY(0);
+        }
+        
+        #expenseDescription {
+            min-height: 120px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+   
+<!-- Remove the sidebar nav element and add back button in header -->
+<!-- Remove the expense summary section -->
+<div class="main-content">
+    <!-- Replace the existing header content with this -->
+    <header class="header">
+        <div class="header-content">
+            <button onclick="window.location.href='expenses.html'" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h1>Store Expenses</h1>
+        </div>
+    </header>
+
+    <div class="container">
+       
+        <div class="expense-form">
+            <!-- Form content with updated structure -->
+            <h2><i class="fas fa-plus-circle"></i> Add New Expense</h2>
+            <form id="expenseForm">
+                <div class="d">
+                    <div class="form-group">
+                        <label for="expenseDate">Date</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseCategory">Category</label>
+                        <select id="expenseCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Salaries">Salaries</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Supplies">Supplies</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseAmount">Amount</label>
+                        <input type="number" id="expenseAmount" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="expenseDescription">Description</label>
+                        <textarea id="expenseDescription" rows="3" placeholder="Enter expense details..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="add-btn">
+                            <i class="fas fa-save"></i> Save Expense
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+            <div class="filter-container">
+                <div class="date-range">
+                    <input type="date" id="startDate" class="filter-select">
+                    <input type="date" id="endDate" class="filter-select">
+                </div>
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } 
+        from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDz5gR_Zb-EOCga3G7pX3N2Rqwef4_hIw",
+            authDomain: "supershop-bc036.firebaseapp.com",
+            databaseURL: "https://supershop-bc036-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "supershop-bc036",
+            storageBucket: "supershop-bc036.firebasestorage.app",
+            messagingSenderId: "528401541608",
+            appId: "1:528401541608:web:e1b352f95286170de09c5d",
+            measurementId: "G-W4D9D0Z20S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Add currency variables
+        let currentCurrency = '৳';
+        let currentCurrencyCode = 'BDT';
+        
+        // Function to load currency settings
+        async function loadCurrencySettings() {
+            try {
+                const storeSnapshot = await getDocs(collection(db, 'storeInfo'));
+                if (!storeSnapshot.empty) {
+                    const storeData = storeSnapshot.docs[0].data();
+                    currentCurrency = storeData.currencySymbol || '৳';
+                    currentCurrencyCode = storeData.currency || 'BDT';
+                    console.log('Currency settings loaded:', currentCurrency, currentCurrencyCode);
+                }
+            } catch (error) {
+                console.error('Error loading currency settings:', error);
+            }
+        }
+        
+        // Function to format currency
+        function formatCurrency(amount) {
+            // Make sure amount is a number and handle null/undefined values
+            const numAmount = parseFloat(amount || 0);
+            return `${numAmount.toFixed(2)}${currentCurrency}`;
+        }
+        let currentExpenseDetail = null;
+        window.showExpenseDetail = (expenseData) => {
+            try {
+                currentExpenseDetail = typeof expenseData === 'string' ? JSON.parse(expenseData) : expenseData;
+                const modal = document.getElementById('expenseDetailModal');
+                const body = document.getElementById('expenseDetailBody');
+                
+                body.innerHTML = `
+                    <div class="detail-row">
+                        <div class="detail-label">Date:</div>
+                        <div class="detail-value">${currentExpenseDetail.date}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Category:</div>
+                        <div class="detail-value">${currentExpenseDetail.category}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Amount:</div>
+                        <div class="detail-value">${formatCurrency(currentExpenseDetail.amount)}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description:</div>
+                        <div class="detail-value">${currentExpenseDetail.description || 'No description provided'}</div>
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('Error showing expense detail:', error);
+                alert('Error showing expense details. Please try again.');
+            }
+        };
+        
+        window.closeDetailModal = () => {
+            document.getElementById('expenseDetailModal').style.display = 'none';
+        };
+        
+        window.printExpenseDetail = () => {
+            if (!currentExpenseDetail) return;
+            
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Expense Detail</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; }
+                            .detail-row { margin-bottom: 15px; }
+                            .detail-label { font-weight: bold; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>Expense Detail</h2>
+                            <p>Generated: ${new Date().toLocaleString()}</p>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Date:</div>
+                            <div>${currentExpenseDetail.date}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Category:</div>
+                            <div>${currentExpenseDetail.category}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Amount:</div>
+                            <div>${formatCurrency(currentExpenseDetail.amount)}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Description:</div>
+                            <div>${currentExpenseDetail.description || 'No description provided'}</div>
+                        </div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        };
+
+        // Add this new function to load categories
+        async function loadCategories() {
+            try {
+                const categorySelect = document.getElementById('categoryFilter');
+                
+                // Keep the "All Categories" option
+                categorySelect.innerHTML = '<option value="">All Categories</option>';
+                
+                // Get all expenses to extract unique categories
+                const querySnapshot = await getDocs(collection(db, 'expenses'));
+                const categories = new Set();
+                
+                // Add predefined categories first
+                ['Utilities', 'Rent', 'Salaries', 'Maintenance', 'Supplies', 'Others'].forEach(cat => {
+                    categories.add(cat);
+                });
+                
+                // Add any additional categories from existing expenses
+                querySnapshot.forEach((doc) => {
+                    const expense = doc.data();
+                    if (expense.category) {
+                        categories.add(expense.category);
+                    }
+                });
+                
+                // Sort categories alphabetically
+                const sortedCategories = Array.from(categories).sort();
+                
+                // Add options to select element
+                sortedCategories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                });
+                
+                console.log('Categories loaded:', sortedCategories);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Load expenses and update summary
+        async function loadExpenses() {
+            // Load currency settings first
+            await loadCurrencySettings();
+            
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const category = document.getElementById('categoryFilter').value;
+            
+            try {
+                // Use a simpler approach to avoid index requirements
+                // Get all expenses first, then filter in memory
+                let q;
+                
+                if (category) {
+                    // If category filter is applied, query by category
+                    q = query(collection(db, 'expenses'), where('category', '==', category));
+                } else {
+                    // Otherwise get all expenses
+                    q = query(collection(db, 'expenses'));
+                }
+                
+                const querySnapshot = await getDocs(q);
+                const tableBody = document.getElementById('expenseTableBody');
+                tableBody.innerHTML = '';
+
+                let expenses = [];
+                let total = 0;
+                let todayTotal = 0;
+                let monthTotal = 0;
+                const today = new Date().toISOString().split('T')[0];
+                const thisMonth = today.substring(0, 7);
+                
+                // Filter expenses by date in memory
+                querySnapshot.forEach((doc) => {
+                    const expense = doc.data();
+                    expense.id = doc.id; // Store the document ID
+                    
+                    // Apply date filters in memory
+                    if ((startDate === '' || expense.date >= startDate) && 
+                        (endDate === '' || expense.date <= endDate)) {
+                        expenses.push(expense);
+                        
+                        const amount = parseFloat(expense.amount);
+                        total += amount;
+                    
+                        if (expense.date === today) {
+                            todayTotal += amount;
+                        }
+                        if (expense.date.startsWith(thisMonth)) {
+                            monthTotal += amount;
+                        }
+                    }
+                });
+                
+                // Sort expenses by date (descending)
+                expenses.sort((a, b) => b.date.localeCompare(a.date));
+                
+                // Render the expenses
+                expenses.forEach(expense => {
+                    const amount = parseFloat(expense.amount);
+                    const row = document.createElement('tr');
+                    const safeExpense = {
+                        date: expense.date,
+                        category: expense.category,
+                        amount: expense.amount,
+                        description: expense.description?.replace(/[\n\r"']/g, ' ') || '-'
+                    };
+                    
+                    row.innerHTML = `
+                        <td>${safeExpense.date}</td>
+                        <td class="expense-category">${safeExpense.category}</td>
+                        <td class="description-cell" onclick='showExpenseDetail(${JSON.stringify(safeExpense)})'>${safeExpense.description}</td>
+                        <td>${formatCurrency(amount)}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteExpense('${expense.id}')">Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                // Update the amount label to show current currency
+                document.querySelector('label[for="expenseAmount"]').textContent = `Amount (${currentCurrency})`;
+                
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                alert('Error loading expenses. Please try again.');
+            }
+        }
+
+        // Add new expense
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const expenseData = {
+                date: document.getElementById('expenseDate').value,
+                category: document.getElementById('expenseCategory').value,
+                amount: document.getElementById('expenseAmount').value,
+                description: document.getElementById('expenseDescription').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(collection(db, 'expenses'), expenseData);
+                e.target.reset();
+                loadExpenses();
+                alert('Expense added successfully!');
+            } catch (error) {
+                console.error('Error adding expense:', error);
+                alert('Error adding expense. Please try again.');
+            }
+        });
+
+        // Delete expense
+        window.deleteExpense = async (id) => {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                try {
+                    await deleteDoc(doc(db, 'expenses', id));
+                    loadExpenses();
+                    alert('Expense deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting expense:', error);
+                    alert('Error deleting expense. Please try again.');
+                }
+            }
+        };
+
+        // Event listeners for filters
+        document.getElementById('startDate').addEventListener('change', loadExpenses);
+        document.getElementById('endDate').addEventListener('change', loadExpenses);
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            console.log('Category filter changed to:', this.value);
+            loadExpenses();
+        });
+
+        // Set default date values
+        const today = new Date();
+        document.getElementById('expenseDate').value = today.toISOString().split('T')[0];
+        document.getElementById('startDate').value = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+
+        // Initial load - add loadCategories call here
+        loadCategories();
+        loadExpenses();
+    </script>
+<!-- Add before </body> -->
+<div id="expenseDetailModal" class="detail-modal">
+    <div class="detail-content">
+        <div class="detail-header">
+            <h2>Expense Details</h2>
+            <button onclick="closeDetailModal()" class="delete-btn">&times;</button>
+        </div>
+        <div class="detail-body" id="expenseDetailBody">
+        </div>
+        <div class="modal-actions">
+            <button onclick="printExpenseDetail()" class="add-btn print-btn">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button onclick="closeDetailModal()" class="delete-bt">Close</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<!-- Add this CSS in the existing style tags -->
+<style>
+    .main-content {
+        margin-left: 0; /* Remove sidebar margin */
+        padding: 20px;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .back-btn {
+        background: #124e66;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+    }
+
+    .back-btn:hover {
+        background: #1a7499;
+    }
+</style>
